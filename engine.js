@@ -204,35 +204,34 @@
     return c + h / 3 * gauss(rng);
   }
 
-  function fmtUm(x) { const v = Math.round(x * 10000) / 10; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v); }
-
+  // Tolerance of a linear dimension. `info` describes where it came from, in mm, for display.
   function linTol(r, nom) {
     if (r.tolMode === 'iso286') {
       const t = iso286(r.iso, nom);
       if (t.err) fail(t.err);
-      return { up: t.up, lo: t.lo, note: t.code + ' → ' + fmtUm(t.up) + ' / ' + fmtUm(t.lo) + ' µm' };
+      return { up: t.up, lo: t.lo, info: { mode: 'iso286', code: t.code } };
     }
     if (r.tolMode === 'iso2768') {
       const t = iso2768Lin(r.cls, Math.abs(nom));
       if (t == null) fail('ISO 2768-1 class ' + r.cls + ' has no value for ' + Math.abs(nom) + ' mm');
-      return { up: t, lo: -t, note: 'ISO 2768-' + r.cls + ' → ±' + t + ' mm' };
+      return { up: t, lo: -t, info: { mode: 'iso2768', cls: r.cls } };
     }
     const up = num(r.up, 0), lo = num(r.lo, 0);
     if (up < lo) fail('Upper deviation is below the lower deviation');
-    return { up, lo, note: '' };
+    return { up, lo, info: { mode: 'dev' } };
   }
 
   function halfAngle(r, L) {
     if (r.angMode === 'zone') {
       const t = num(r.t, NaN), Lz = num(r.Lz, NaN);
       if (!(t >= 0) || !(Lz > 0)) fail('Enter the zone width t and the length it applies over');
-      return { a: Math.atan(t / Lz), note: 'zone ' + t + ' over ' + Lz + ' mm' };
+      return { a: Math.atan(t / Lz), info: { mode: 'zone', t, Lz } };
     }
     if (r.angMode === 'iso2768') {
       const leg = num(r.leg, L);
       const am = iso2768Ang(r.cls, leg);
       if (am == null) fail('Pick an ISO 2768-1 class');
-      return { a: am / 60 * Math.PI / 180, note: 'ISO 2768-' + r.cls + ', shorter leg ' + leg + ' mm → ±' + (am >= 60 ? (am / 60) + '°' : am + '′') };
+      return { a: am / 60 * Math.PI / 180, info: { mode: 'iso2768', cls: r.cls, leg, arcmin: am } };
     }
     const v = Math.abs(num(r.ang, NaN));
     if (!isFinite(v)) fail('Enter the angular tolerance');
@@ -241,7 +240,7 @@
       : unit === 'arcsec' ? v / 3600 * Math.PI / 180
       : unit === 'mmm' ? Math.atan(v / 1000)
       : v * Math.PI / 180;
-    return { a, note: '' };
+    return { a, info: { mode: 'angle', value: v, unit } };
   }
 
   function devs(mode, code, up, lo, D, hole) {
@@ -282,19 +281,21 @@
       const a = alphaOf(r.mat, r.alpha) * 1e-6, dT = T + num(r.dT, 0) - 20, f = 1 + a * dT;
       const xlo = (nom + tol.lo) * f, xhi = (nom + tol.up) * f;
       const v1 = s * xlo, v2 = s * xhi;
-      return { m: (v1 + v2) / 2, h: Math.abs(v2 - v1) / 2, note: tol.note, sample: rng => s * draw(rng, dist, xlo, xhi) };
+      return {
+        m: (v1 + v2) / 2, h: Math.abs(v2 - v1) / 2,
+        info: Object.assign({ kind: 'lin', nom, up: tol.up, lo: tol.lo, alpha: a * 1e6 }, tol.info),
+        sample: rng => s * draw(rng, dist, xlo, xhi)
+      };
     }
 
     if (r.type === 'ang') {
       const L = num(r.L, NaN);
       if (!(L >= 0)) fail('Enter the lever arm L');
-      const { a, note } = halfAngle(r, L);
+      const { a, info } = halfAngle(r, L);
       const d = L * Math.tan(a);
-      const deg = a * 180 / Math.PI;
-      const angTxt = deg >= 1 ? deg.toFixed(3) + '°' : (deg * 60).toFixed(2) + '′';
       return {
         m: 0, h: Math.abs(s) * d,
-        note: (note ? note + ' · ' : '') + '±' + angTxt + ' at L = ' + L + ' mm',
+        info: Object.assign({ kind: 'ang', L, a }, info),
         sample: rng => s * L * Math.tan(draw(rng, dist, -a, a))
       };
     }
@@ -308,8 +309,7 @@
       const th = D * (ah * (T + num(r.dTh, 0) - 20) - as * (T + num(r.dTs, 0) - 20));
       const cmin = hole.lo - shaft.up + th, cmax = hole.up - shaft.lo + th;
       const out = effect(r.eff, s, cmin, cmax, rng => draw(rng, dist, hole.lo, hole.up) - draw(rng, dist, shaft.lo, shaft.up) + th);
-      out.note = 'Ø' + D + ' ' + (hole.code || 'hole') + '/' + (shaft.code || 'shaft') +
-        ' · hole ' + fmtUm(hole.up) + '/' + fmtUm(hole.lo) + ' µm, shaft ' + fmtUm(shaft.up) + '/' + fmtUm(shaft.lo) + ' µm';
+      out.info = { kind: 'fit', D, hole, shaft };
       return out;
     }
 
@@ -318,7 +318,7 @@
       if (!isFinite(pmin) || !isFinite(pmax)) fail('Enter minimum and maximum play');
       if (pmax < pmin) fail('Maximum play is below minimum play');
       const out = effect(r.eff, s, pmin, pmax, rng => draw(rng, dist, pmin, pmax));
-      out.note = '';
+      out.info = { kind: 'play', pmin, pmax };
       return out;
     }
     fail('Unknown contributor type');

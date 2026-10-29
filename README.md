@@ -13,6 +13,8 @@ A free, browser-based 1D tolerance stack-up calculator for mechanical and precis
 - **Thermal expansion** per part (material library or custom α) relative to the ISO 1 reference temperature of 20 °C, including clearance change between hole and shaft materials
 - **Results** at minimum ambient, 20 °C and maximum ambient: worst case, RSS and Monte Carlo, with pass/fail against limits, ppm out of limits, Cpk, a histogram and a variance contribution chart
 
+- **SI or imperial units**: switch between mm/°C and inch/°F at any time. Calculations and saved files always stay in mm and °C, so a stack opens the same in either mode; ISO 286 and ISO 2768 values are looked up from the metric size and shown converted
+
 Stacks are saved in the browser and can be exported/imported as JSON. Results export as CSV.
 
 ## Method

@@ -209,6 +209,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
     </div>
     <div class="toolbar">
+      <div class="tabs" id="unitTabs" role="group" aria-label="Units">
+        <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
+        <button type="button" data-units="imp" aria-pressed="false">Imperial · in</button>
+      </div>
       <label class="sr" for="example">Load an example stack</label>
       <select id="example" class="btn">
         <option value="">Load example…</option>
@@ -226,10 +230,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
         <div class="panel-head"><h2>Stack</h2><span class="hint">Saved in this browser as you type</span></div>
         <div class="grid">
           <label class="fld name" for="st-name"><span class="lab">Stack name</span><input id="st-name" data-s="name" autocomplete="off"></label>
-          <label class="fld" for="st-lsl"><span class="lab">Lower limit <em>mm</em></span><input id="st-lsl" data-s="lsl" inputmode="decimal" placeholder="none"></label>
-          <label class="fld" for="st-usl"><span class="lab">Upper limit <em>mm</em></span><input id="st-usl" data-s="usl" inputmode="decimal" placeholder="none"></label>
-          <label class="fld" for="st-tCold"><span class="lab">Ambient min <em>°C</em></span><input id="st-tCold" data-s="tCold" inputmode="decimal"></label>
-          <label class="fld" for="st-tHot"><span class="lab">Ambient max <em>°C</em></span><input id="st-tHot" data-s="tHot" inputmode="decimal"></label>
+          <label class="fld" for="st-lsl"><span class="lab">Lower limit <em data-unit="len">mm</em></span><input id="st-lsl" data-s="lsl" data-u="len" inputmode="decimal" placeholder="none"></label>
+          <label class="fld" for="st-usl"><span class="lab">Upper limit <em data-unit="len">mm</em></span><input id="st-usl" data-s="usl" data-u="len" inputmode="decimal" placeholder="none"></label>
+          <label class="fld" for="st-tCold"><span class="lab">Ambient min <em data-unit="temp">°C</em></span><input id="st-tCold" data-s="tCold" data-u="temp" inputmode="decimal"></label>
+          <label class="fld" for="st-tHot"><span class="lab">Ambient max <em data-unit="temp">°C</em></span><input id="st-tHot" data-s="tHot" data-u="temp" inputmode="decimal"></label>
           <label class="fld" for="st-n"><span class="lab">Monte Carlo runs</span>
             <select id="st-n" data-s="n"><option value="20000">20 000</option><option value="50000">50 000</option><option value="100000">100 000</option><option value="250000">250 000</option></select>
           </label>
@@ -238,7 +242,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>Chain at 20 °C</h2><span class="hint">Arrows to the right add, to the left subtract. Circles are zero-nominal contributors.</span></div>
+        <div class="panel-head"><h2>Chain at <span data-ref-temp>20 °C</span></h2><span class="hint">Arrows to the right add, to the left subtract. Circles are zero-nominal contributors.</span></div>
         <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram"></svg></div>
       </div>
 
@@ -297,7 +301,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
         <svg id="hist" viewBox="0 0 480 250" role="img" aria-label="Monte Carlo histogram of the result"></svg>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>Contribution at 20 °C</h2><span class="hint">share of variance · share of worst case</span></div>
+        <div class="panel-head"><h2>Contribution at <span data-ref-temp>20 °C</span></h2><span class="hint">share of variance · share of worst case</span></div>
         <div class="par" id="pareto"></div>
       </div>
     </aside>
@@ -316,7 +320,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
 
   const TYPE_NAME = { lin: 'Dimension', ang: 'Angle / form', fit: 'Fit / pin', play: 'Play' };
   const DIST = [['normal', 'Normal, ±3σ'], ['uniform', 'Uniform'], ['triangular', 'Triangular']];
-  const MATS = E.MATERIALS.map(m => [m.id, m.alpha == null ? 'Custom α…' : m.alpha === 0 ? m.name : m.name + ' · ' + m.alpha]);
+  const matOpts = () => E.MATERIALS.map(m => [m.id, m.alpha == null ? 'Custom α…' : m.alpha === 0 ? m.name : m.name + ' · ' + +toU(m.alpha, 'alpha').toFixed(1)]);
   const EFF = [['float', 'Floats ±½ clearance'], ['side', 'Pushed to one side'], ['full', 'Full clearance adds']];
   const CLS = [['f', 'f · fine'], ['m', 'm · medium'], ['c', 'c · coarse'], ['v', 'v · very coarse']];
 
@@ -383,6 +387,68 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return (+t === 0 ? '' : x < 0 ? '−' : '+') + t;
   }
   function um(x) { const v = Math.round(x * 10000) / 10; return (v < 0 ? '−' : '') + Math.abs(v); }
+
+  /* ---------- units: engine and saved JSON stay in mm and °C ---------- */
+  const IN = 25.4;
+  const imp = () => state.units === 'imp';
+  const UNIT = { len: ['mm', 'in'], temp: ['°C', '°F'], dtemp: ['°C', '°F'], alpha: ['10⁻⁶/K', 'µin/in·°F'] };
+  const unitOf = k => UNIT[k][imp() ? 1 : 0];
+  const LU = () => unitOf('len');
+  function toU(x, k) {
+    if (!imp()) return x;
+    return k === 'len' ? x / IN : k === 'temp' ? x * 9 / 5 + 32 : k === 'dtemp' ? x * 9 / 5 : k === 'alpha' ? x * 5 / 9 : x;
+  }
+  function fromU(x, k) {
+    if (!imp()) return x;
+    return k === 'len' ? x * IN : k === 'temp' ? (x - 32) * 5 / 9 : k === 'dtemp' ? x * 5 / 9 : k === 'alpha' ? x * 9 / 5 : x;
+  }
+  // stored value → text shown in an input
+  function dispVal(v, k) {
+    if (!k || !imp()) return v;
+    const x = E.num(v, NaN);
+    return isFinite(x) ? String(+toU(x, k).toFixed(k === 'len' ? 6 : 3)) : v;
+  }
+  // text typed in an input → stored value
+  function storeVal(text, k) {
+    if (!k || !imp()) return text;
+    const x = E.num(text, NaN);
+    return isFinite(x) ? String(+fromU(x, k).toPrecision(12)) : text;
+  }
+  // mm → display length; inch always at 4 decimals
+  const dL = d => (imp() ? 4 : d);
+  function fmtL(x, d) { d = d == null ? 4 : d; return fmt(toU(x, 'len'), dL(d)); }
+  function fmtSL(x, d) { d = d == null ? 4 : d; return fmtS(toU(x, 'len'), dL(d)); }
+  function lenTxt(x) { return String(+toU(x, 'len').toFixed(imp() ? 4 : 3)); }
+  function tempTxt(T) { const v = +toU(T, 'temp').toFixed(1); return (v < 0 ? '−' : '') + Math.abs(v) + ' ' + unitOf('temp'); }
+  // deviation pair: µm in SI, inch in imperial
+  function devTxt(up, lo) {
+    if (imp()) return (fmtS(up / IN, 4) || '0') + ' / ' + (fmtS(lo / IN, 4) || '0') + ' in';
+    const s = x => { const v = Math.round(x * 10000) / 10; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v); };
+    return s(up) + ' / ' + s(lo) + ' µm';
+  }
+  function clrTxt(a, b) { return imp() ? fmt(a / IN, 5) + '…' + fmt(b / IN, 5) + ' in' : um(a) + '…' + um(b) + ' µm'; }
+  // Specification details of a contributor, from the engine's info
+  function noteOf(info) {
+    if (!info) return '';
+    const u = LU();
+    if (info.kind === 'lin') {
+      if (info.mode === 'iso286') return info.code + ' → ' + devTxt(info.up, info.lo);
+      if (info.mode === 'iso2768') return 'ISO 2768-' + info.cls + ' → ±' + lenTxt(info.up) + ' ' + u;
+      return '';
+    }
+    if (info.kind === 'ang') {
+      const deg = info.a * 180 / Math.PI;
+      const ang = '±' + (deg >= 1 ? deg.toFixed(3) + '°' : (deg * 60).toFixed(2) + '′') + ' at L = ' + lenTxt(info.L) + ' ' + u;
+      if (info.mode === 'zone') return 'zone ' + lenTxt(info.t) + ' over ' + lenTxt(info.Lz) + ' ' + u + ' · ' + ang;
+      if (info.mode === 'iso2768') return 'ISO 2768-' + info.cls + ', shorter leg ' + lenTxt(info.leg) + ' ' + u + ' → ±' + (info.arcmin >= 60 ? info.arcmin / 60 + '°' : info.arcmin + '′') + ' · ' + ang;
+      return ang;
+    }
+    if (info.kind === 'fit') {
+      return 'Ø' + lenTxt(info.D) + ' ' + (info.hole.code || 'hole') + '/' + (info.shaft.code || 'shaft') +
+        ' · hole ' + devTxt(info.hole.up, info.hole.lo) + ', shaft ' + devTxt(info.shaft.up, info.shaft.lo);
+    }
+    return '';
+  }
   function pct(x) { return isFinite(x) ? (x * 100 >= 9.95 ? (x * 100).toFixed(0) : (x * 100).toFixed(1)) + '%' : '—'; }
   function ppm(count, n) {
     if (!count) return '0';
@@ -400,7 +466,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
       return Object.assign(newRow(r.type), r, { id: nextId++ });
     });
     const b = blank();
-    return { name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'), rows };
+    return {
+      name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'),
+      units: o.units === 'imp' ? 'imp' : (o.units === 'si' ? 'si' : (state && state.units) || 'si'),
+      rows
+    };
   }
   function load() {
     try { const raw = localStorage.getItem(KEY); if (raw) return normalize(JSON.parse(raw)); } catch (e) { /* fall through */ }
@@ -430,11 +500,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
   });
 
   /* ---------- contributor cards ---------- */
+  // o.u: unit kind (len, temp, dtemp, alpha) converted between stored mm/°C and the display unit
   function fld(r, k, label, unit, o) {
     o = o || {};
     const id = 'r' + r.id + '-' + k;
+    if (o.u) unit = unitOf(o.u);
     return '<label class="fld' + (o.wide ? ' wide' : '') + '" for="' + id + '"><span class="lab">' + label + (unit ? ' <em>' + unit + '</em>' : '') + '</span>' +
-      '<input id="' + id + '" data-id="' + r.id + '" data-k="' + k + '" value="' + esc(r[k]) + '"' + (o.text ? '' : ' inputmode="decimal"') +
+      '<input id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (o.u ? ' data-u="' + o.u + '"' : '') + ' value="' + esc(dispVal(r[k], o.u)) + '"' + (o.text ? '' : ' inputmode="decimal"') +
       (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' autocomplete="off" spellcheck="false"></label>';
   }
   function pick(r, k, label, opts, struct) {
@@ -442,35 +514,36 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return '<label class="fld" for="' + id + '"><span class="lab">' + label + '</span><select id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (struct ? ' data-struct' : '') + '>' +
       opts.map(([v, t]) => '<option value="' + esc(v) + '"' + (String(r[k]) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>';
   }
-  function mat(r, k, ak, label) { return pick(r, k, label, MATS, true) + (r[k] === 'custom' ? fld(r, ak, 'α', '10⁻⁶/K') : ''); }
+  function mat(r, k, ak, label) { return pick(r, k, label, matOpts(), true) + (r[k] === 'custom' ? fld(r, ak, 'α', '', { u: 'alpha' }) : ''); }
   const common = r => pick(r, 'dist', 'Distribution', DIST) + fld(r, 'k', 'Factor', '×');
+  const L = { u: 'len' }, DT = { u: 'dtemp' };
 
   function body(r) {
     if (r.type === 'lin') {
-      let h = fld(r, 'nom', 'Nominal', 'mm') + pick(r, 'tolMode', 'Tolerance', [['dev', 'Deviations'], ['iso286', 'ISO 286 code'], ['iso2768', 'ISO 2768-1']], true);
+      let h = fld(r, 'nom', 'Nominal', '', L) + pick(r, 'tolMode', 'Tolerance', [['dev', 'Deviations'], ['iso286', 'ISO 286 code'], ['iso2768', 'ISO 2768-1']], true);
       if (r.tolMode === 'iso286') h += fld(r, 'iso', 'Code', 'h7, H8, js9', { text: true });
       else if (r.tolMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS);
-      else h += fld(r, 'up', 'Upper dev.', 'mm') + fld(r, 'lo', 'Lower dev.', 'mm');
-      return h + mat(r, 'mat', 'alpha', 'Material · α 10⁻⁶/K') + fld(r, 'dT', 'Part ΔT vs ambient', '°C') + common(r);
+      else h += fld(r, 'up', 'Upper dev.', '', L) + fld(r, 'lo', 'Lower dev.', '', L);
+      return h + mat(r, 'mat', 'alpha', 'Material · α ' + unitOf('alpha')) + fld(r, 'dT', 'Part ΔT vs ambient', '', DT) + common(r);
     }
     if (r.type === 'ang') {
-      let h = fld(r, 'L', 'Lever arm L', 'mm') + pick(r, 'angMode', 'Tolerance', [['angle', 'Angle ±'], ['zone', 'Geometric zone'], ['iso2768', 'ISO 2768-1']], true);
-      if (r.angMode === 'zone') h += fld(r, 't', 'Zone t', 'mm') + fld(r, 'Lz', 'Over length', 'mm');
-      else if (r.angMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS) + fld(r, 'leg', 'Shorter leg', 'mm', { ph: 'L' });
-      else h += fld(r, 'ang', 'Angle ±', '') + pick(r, 'unit', 'Unit', [['deg', 'degrees'], ['arcmin', 'arcmin'], ['arcsec', 'arcsec'], ['mmm', 'mm/m']]);
+      let h = fld(r, 'L', 'Lever arm L', '', L) + pick(r, 'angMode', 'Tolerance', [['angle', 'Angle ±'], ['zone', 'Geometric zone'], ['iso2768', 'ISO 2768-1']], true);
+      if (r.angMode === 'zone') h += fld(r, 't', 'Zone t', '', L) + fld(r, 'Lz', 'Over length', '', L);
+      else if (r.angMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS) + fld(r, 'leg', 'Shorter leg', '', { u: 'len', ph: 'L' });
+      else h += fld(r, 'ang', 'Angle ±', '') + pick(r, 'unit', 'Unit', [['deg', 'degrees'], ['arcmin', 'arcmin'], ['arcsec', 'arcsec'], ['mmm', 'mm/m (‰)']]);
       return h + common(r);
     }
     if (r.type === 'fit') {
-      let h = fld(r, 'D', 'Diameter', 'mm') + pick(r, 'eff', 'Effect on chain', EFF);
+      let h = fld(r, 'D', 'Diameter', '', L) + pick(r, 'eff', 'Effect on chain', EFF);
       h += pick(r, 'hMode', 'Hole tolerance', [['iso', 'ISO 286 code'], ['dev', 'Deviations']], true);
-      h += r.hMode === 'dev' ? fld(r, 'hUp', 'Hole ES', 'mm') + fld(r, 'hLo', 'Hole EI', 'mm') : fld(r, 'hIso', 'Hole code', 'H7', { text: true });
+      h += r.hMode === 'dev' ? fld(r, 'hUp', 'Hole ES', '', L) + fld(r, 'hLo', 'Hole EI', '', L) : fld(r, 'hIso', 'Hole code', 'H7', { text: true });
       h += pick(r, 'sMode', 'Shaft / pin tolerance', [['iso', 'ISO 286 code'], ['dev', 'Deviations']], true);
-      h += r.sMode === 'dev' ? fld(r, 'sUp', 'Shaft es', 'mm') + fld(r, 'sLo', 'Shaft ei', 'mm') : fld(r, 'sIso', 'Shaft code', 'g6', { text: true });
+      h += r.sMode === 'dev' ? fld(r, 'sUp', 'Shaft es', '', L) + fld(r, 'sLo', 'Shaft ei', '', L) : fld(r, 'sIso', 'Shaft code', 'g6', { text: true });
       h += mat(r, 'hMat', 'hAlpha', 'Hole material') + mat(r, 'sMat', 'sAlpha', 'Shaft material');
-      h += fld(r, 'dTh', 'Hole ΔT', '°C') + fld(r, 'dTs', 'Shaft ΔT', '°C');
+      h += fld(r, 'dTh', 'Hole ΔT', '', DT) + fld(r, 'dTs', 'Shaft ΔT', '', DT);
       return h + common(r);
     }
-    return fld(r, 'pmin', 'Min play', 'mm') + fld(r, 'pmax', 'Max play', 'mm') + pick(r, 'eff', 'Effect on chain', EFF) + common(r);
+    return fld(r, 'pmin', 'Min play', '', L) + fld(r, 'pmax', 'Max play', '', L) + pick(r, 'eff', 'Effect on chain', EFF) + common(r);
   }
 
   function card(r, i) {
@@ -498,7 +571,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (results) updateFoots();
   }
   function renderSetup() {
-    document.querySelectorAll('[data-s]').forEach(el => { el.value = state[el.dataset.s] ?? ''; });
+    document.querySelectorAll('[data-s]').forEach(el => { el.value = dispVal(state[el.dataset.s] ?? '', el.dataset.u); });
+    document.querySelectorAll('[data-unit]').forEach(el => { el.textContent = unitOf(el.dataset.unit); });
+    document.querySelectorAll('[data-ref-temp]').forEach(el => { el.textContent = tempTxt(20); });
+    document.querySelectorAll('[data-units]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.units === (imp() ? 'imp' : 'si'))));
     if (![...$('#st-n').options].some(o => o.value === String(state.n))) $('#st-n').value = '100000';
   }
   function renderAll() { renderSetup(); renderRows(); compute(); }
@@ -510,7 +586,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (!t.dataset.k) return;
     const r = findRow(t.dataset.id);
     if (!r) return;
-    r[t.dataset.k] = t.value;
+    r[t.dataset.k] = storeVal(t.value, t.dataset.u);
     schedule();
   });
   $('#rows').addEventListener('change', e => {
@@ -549,7 +625,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const el = document.getElementById('r' + r.id + '-label');
     if (el) { el.focus(); el.select(); }
   }));
-  document.querySelectorAll('[data-s]').forEach(el => el.addEventListener('input', () => { state[el.dataset.s] = el.value; schedule(); }));
+  document.querySelectorAll('[data-s]').forEach(el => el.addEventListener('input', () => { state[el.dataset.s] = storeVal(el.value, el.dataset.u); schedule(); }));
+  $('#unitTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-units]');
+    if (!b || b.dataset.units === state.units) return;
+    state.units = b.dataset.units;
+    renderAll();
+  });
   $('#example').addEventListener('change', e => {
     const k = e.target.value;
     e.target.value = '';
@@ -603,7 +685,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     L.push(['#', 'Contributor', 'Type', 'Direction', 'Mean @20C', 'Half range @20C', 'Variance share', 'Note'].map(q).join(','));
     state.rows.forEach((r, i) => {
       const m = ref.models[i];
-      L.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '-' : '+', m.err ? '' : m.m.toFixed(5), m.err ? '' : m.h.toFixed(5), m.err ? '' : (m.varShare * 100).toFixed(2) + '%', m.err || m.note || ''].map(q).join(','));
+      L.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '-' : '+', m.err ? '' : m.m.toFixed(5), m.err ? '' : m.h.toFixed(5), m.err ? '' : (m.varShare * 100).toFixed(2) + '%', m.err || noteOf(m.info)].map(q).join(','));
     });
     L.push('');
     L.push(['Metric', 'Cold ' + c.T + 'C', 'Ref 20C', 'Hot ' + h.T + 'C'].map(q).join(','));
@@ -652,18 +734,19 @@ details.panel[open] > summary { margin-bottom: 12px; }
         return;
       }
       card.classList.remove('has-err');
-      const p = ['<b>' + (fmtS(m.m) || '0.0000') + ' ± ' + fmt(m.h) + '</b> mm'];
-      if (m.note) p.push(esc(m.note));
+      const p = ['<b>' + (fmtSL(m.m) || fmtL(0)) + ' ± ' + fmtL(m.h) + '</b> ' + LU()];
+      const note = noteOf(m.info);
+      if (note) p.push(esc(note));
       if (m.cmin != null) {
-        const range = x => um(x.cmin) + '…' + um(x.cmax) + ' µm';
-        let s = 'clearance ' + range(m) + ' at 20 °C';
+        const range = x => clrTxt(x.cmin, x.cmax);
+        let s = 'clearance ' + range(m) + ' at ' + tempTxt(20);
         const tc = c.models[i], th = h.models[i];
-        if (!tc.err && !th.err && (Math.abs(tc.cmin - m.cmin) > 5e-5 || Math.abs(th.cmin - m.cmin) > 5e-5)) s += ', ' + range(tc) + ' at ' + c.T + ' °C, ' + range(th) + ' at ' + h.T + ' °C';
+        if (!tc.err && !th.err && (Math.abs(tc.cmin - m.cmin) > 5e-5 || Math.abs(th.cmin - m.cmin) > 5e-5)) s += ', ' + range(tc) + ' at ' + tempTxt(c.T) + ', ' + range(th) + ' at ' + tempTxt(h.T);
         if (m.cmin <= 0) s += ' · no float where clearance ≤ 0';
         p.push(s);
       } else {
         const tc = c.models[i], th = h.models[i];
-        if (!tc.err && !th.err && (Math.abs(tc.m - m.m) > 5e-6 || Math.abs(th.m - m.m) > 5e-6)) p.push('thermal ' + (fmtS(tc.m - m.m) || '0') + ' at ' + c.T + ' °C, ' + (fmtS(th.m - m.m) || '0') + ' at ' + h.T + ' °C');
+        if (!tc.err && !th.err && (Math.abs(tc.m - m.m) > 5e-6 || Math.abs(th.m - m.m) > 5e-6)) p.push('thermal ' + (fmtSL(tc.m - m.m) || '0') + ' at ' + tempTxt(c.T) + ', ' + (fmtSL(th.m - m.m) || '0') + ' at ' + tempTxt(h.T));
       }
       p.push(pct(m.varShare) + ' of variance');
       el.innerHTML = p.join(' · ');
@@ -683,10 +766,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const cs = results;
     const lo = cs[0].lsl, hi = cs[0].usl;
     const cls = v => ((isFinite(lo) && v < lo - 1e-12) || (isFinite(hi) && v > hi + 1e-12)) ? ' class="bad"' : '';
-    const head = '<tr><th scope="col"><span class="sr">Metric</span></th>' + cs.map(x => '<th scope="col">' + (x.key === 'ref' ? '20 °C' : x.T + ' °C') + '</th>').join('') + '</tr>';
+    const head = '<tr><th scope="col"><span class="sr">Metric, </span>' + LU() + '</th>' + cs.map(x => '<th scope="col">' + tempTxt(x.T) + '</th>').join('') + '</tr>';
     const tr = (label, f, sep) => '<tr' + (sep ? ' class="sep"' : '') + '><td>' + label + '</td>' + cs.map(f).join('') + '</tr>';
-    const v = (x, d) => '<td' + cls(x) + '>' + fmt(x, d) + '</td>';
-    $('#resCaption').textContent = (state.result || 'Result') + (isFinite(lo) || isFinite(hi) ? ' · limits ' + (isFinite(lo) ? fmt(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmt(hi, 3) : '—') + ' mm' : '');
+    const v = (x, d) => '<td' + cls(x) + '>' + fmtL(x, d) + '</td>';
+    $('#resCaption').textContent = (state.result || 'Result') + (isFinite(lo) || isFinite(hi) ? ' · limits ' + (isFinite(lo) ? fmtL(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmtL(hi, 3) : '—') + ' ' + LU() : '');
     $('#resTable').innerHTML = head +
       tr('Status', x => { const s = status(x); return '<td><span class="pill ' + s[0] + '">' + s[1] + '</span></td>'; }) +
       tr('Mean of zones', x => v(x.nominal), true) +
@@ -694,8 +777,8 @@ details.panel[open] > summary { margin-bottom: 12px; }
       tr('Worst case max', x => v(x.wcHi)) +
       tr('RSS min', x => v(x.rssLo), true) +
       tr('RSS max', x => v(x.rssHi)) +
-      tr('MC mean', x => '<td>' + fmt(x.mc.mean) + '</td>', true) +
-      tr('MC σ', x => '<td>' + fmt(x.mc.sd) + '</td>') +
+      tr('MC mean', x => '<td>' + fmtL(x.mc.mean) + '</td>', true) +
+      tr('MC σ', x => '<td>' + fmtL(x.mc.sd) + '</td>') +
       tr('MC −3σ (0.135%)', x => v(x.mc.pLo)) +
       tr('MC +3σ (99.865%)', x => v(x.mc.pHi)) +
       tr('Out of limits', x => { const n = x.mc.below + x.mc.above; return '<td' + (n ? ' class="bad"' : ' class="okv"') + '>' + ppm(n, x.mc.n) + '</td>'; }, true) +
@@ -703,7 +786,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   }
 
   function renderTabs() {
-    $('#caseTabs').innerHTML = results.map(x => '<button type="button" data-case="' + x.key + '" aria-pressed="' + (x.key === activeCase) + '">' + (x.key === 'ref' ? '20 °C' : x.T + ' °C') + '</button>').join('');
+    $('#caseTabs').innerHTML = results.map(x => '<button type="button" data-case="' + x.key + '" aria-pressed="' + (x.key === activeCase) + '">' + tempTxt(x.T) + '</button>').join('');
   }
   $('#caseTabs').addEventListener('click', e => {
     const b = e.target.closest('[data-case]');
@@ -745,9 +828,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
       g += '<rect class="h-bar' + (out ? ' out' : '') + '" x="' + (X(c0) + 0.5).toFixed(1) + '" y="' + (axisY - hgt).toFixed(1) + '" width="' + Math.max(0.5, X(c1) - X(c0) - 1).toFixed(1) + '" height="' + hgt.toFixed(1) + '"/>';
     }
     g += '<line class="h-axis" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + axisY + '" y2="' + axisY + '"/>';
-    const step = niceStep(hi - lo, 5), dec = Math.max(0, Math.min(5, -Math.floor(Math.log10(step) + 1e-9)));
-    for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-12; t += step) {
-      const px = X(t);
+    // ticks are placed in the display unit
+    const k = toU(1, 'len'), loU = lo * k, hiU = hi * k;
+    const step = niceStep(hiU - loU, 5), dec = Math.max(0, Math.min(6, -Math.floor(Math.log10(step) + 1e-9)));
+    for (let t = Math.ceil(loU / step) * step; t <= hiU + 1e-12; t += step) {
+      const px = X(t / k);
       if (px < ml + 18 || px > W - mr - 18) continue;
       g += '<line class="h-axis" x1="' + px.toFixed(1) + '" x2="' + px.toFixed(1) + '" y1="' + axisY + '" y2="' + (axisY + 4) + '"/>';
       g += '<text class="h-tick" x="' + px.toFixed(1) + '" y="' + (axisY + 16) + '" text-anchor="middle">' + fmt(t, dec) + '</text>';
@@ -758,7 +843,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       if (!isFinite(v)) return;
       const px = X(v).toFixed(1);
       g += '<line class="h-spec" x1="' + px + '" x2="' + px + '" y1="' + (mt - 14) + '" y2="' + axisY + '"/>';
-      g += '<text class="h-spec-lab" x="' + (+px + dx) + '" y="' + (mt - 4) + '" text-anchor="' + anchor + '">' + n + ' ' + fmt(v, 3) + '</text>';
+      g += '<text class="h-spec-lab" x="' + (+px + dx) + '" y="' + (mt - 4) + '" text-anchor="' + anchor + '">' + n + ' ' + fmtL(v, 3) + '</text>';
     });
     const bracket = (a, b, y, label, k) => {
       const x1 = X(a), x2 = X(b);
@@ -767,8 +852,8 @@ details.panel[open] > summary { margin-bottom: 12px; }
         '<line class="h-br ' + k + '" x1="' + x2 + '" x2="' + x2 + '" y1="' + (y - 4) + '" y2="' + (y + 4) + '"/>' +
         '<text class="h-br-lab ' + k + '" x="' + ((x1 + x2) / 2) + '" y="' + (y - 6) + '" text-anchor="middle">' + label + '</text>';
     };
-    g += bracket(x.rssLo, x.rssHi, 208, 'RSS ' + fmt(x.rssLo, 3) + ' … ' + fmt(x.rssHi, 3), 'rss');
-    g += bracket(x.wcLo, x.wcHi, 240, 'Worst case ' + fmt(x.wcLo, 3) + ' … ' + fmt(x.wcHi, 3), 'wc');
+    g += bracket(x.rssLo, x.rssHi, 208, 'RSS ' + fmtL(x.rssLo, 3) + ' … ' + fmtL(x.rssHi, 3), 'rss');
+    g += bracket(x.wcLo, x.wcHi, 240, 'Worst case ' + fmtL(x.wcLo, 3) + ' … ' + fmtL(x.wcHi, 3) + ' ' + LU(), 'wc');
     svg.innerHTML = g;
   }
 
@@ -807,13 +892,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
       const y = top + s.i * rh + rh / 2;
       g += '<text class="ch-lab" x="0" y="' + (y + 4) + '">' + (s.i + 1) + '  ' + esc(trunc(s.r.label || TYPE_NAME[s.r.type], 27)) + '</text>';
       if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">check input</text>'; return; }
-      g += '<text class="ch-val" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (Math.abs(s.m.m) < 5e-5 ? '±' + fmt(s.m.h, 3) : fmtS(s.m.m, 3)) + '</text>';
+      g += '<text class="ch-val" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (Math.abs(s.m.m) < 5e-5 ? '±' + fmtL(s.m.h, 3) : fmtSL(s.m.m, 3)) + '</text>';
       if (Math.abs(X(s.b) - X(s.a)) < 3) g += '<circle class="ch-dot" cx="' + X(s.a).toFixed(1) + '" cy="' + y + '" r="4"/>';
       else g += arrow(X(s.a), X(s.b), y, 'ch-line', 'ch-head');
     });
     const y = top + n * rh + rh / 2 + 4;
     g += '<text class="ch-res-lab" x="0" y="' + (y + 4) + '">Result</text>';
-    g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmt(total, 4) + '</text>';
+    g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtL(total, 4) + ' ' + LU() + '</text>';
     if (Math.abs(X(total) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0) + '" cy="' + y + '" r="4"/>';
     else g += arrow(X(0), X(total), y, 'ch-line ch-res', 'ch-res-head');
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
