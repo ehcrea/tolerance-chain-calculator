@@ -37,3 +37,7 @@ ISO 286-1 deviations are computed from the fundamental deviation rules for sizes
 ## Disclaimer
 
 This is an engineering aid. Verify results for safety-critical or production decisions.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
