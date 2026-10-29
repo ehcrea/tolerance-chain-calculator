@@ -72,6 +72,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.small { padding: 3px 9px; font-size: 13px; }
 select.btn { padding-right: 8px; }
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.tb-sep { width: 1px; align-self: stretch; background: var(--line-strong); margin: 2px 2px; }
 
 /* layout */
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 500px); gap: 20px; align-items: start; }
@@ -221,6 +223,9 @@ details.panel[open] > summary { margin-bottom: 12px; }
         <option value="gear">Gear centre distance with bearing play</option>
       </select>
       <button class="btn" id="newStack" type="button">New stack</button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button class="btn" id="dlCsv" type="button" title="Download results as CSV">CSV</button>
+      <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook">Excel</button>
     </div>
   </header>
 
@@ -259,8 +264,8 @@ details.panel[open] > summary { margin-bottom: 12px; }
       <details class="panel" id="ioPanel">
         <summary>Import and export</summary>
         <div class="io-actions">
+          <button class="btn small" type="button" id="saveJson">Save stack .json</button>
           <button class="btn small" type="button" id="copyJson">Copy stack JSON</button>
-          <button class="btn small" type="button" id="copyCsv">Copy results CSV</button>
           <button class="btn small" type="button" id="loadText">Load JSON from box</button>
           <label class="btn small" for="fileIn">Open .json file</label>
           <input class="sr" type="file" id="fileIn" accept=".json,application/json">
@@ -660,7 +665,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
     copy(JSON.stringify(out, null, 2), 'Stack JSON');
   });
-  $('#copyCsv').addEventListener('click', () => copy(csv(), 'Results CSV'));
+  $('#saveJson').addEventListener('click', () => {
+    const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
+    download(fileBase() + '.json', new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+  });
   function loadJsonText(txt) {
     try { replaceState(JSON.parse(txt), 'Stack loaded'); }
     catch (e) { toast('Could not load: ' + e.message, true); }
@@ -674,36 +682,155 @@ details.panel[open] > summary { margin-bottom: 12px; }
     rd.readAsText(f);
     e.target.value = '';
   });
-  function csv() {
-    const q = v => '"' + String(v).replace(/"/g, '""') + '"';
-    const [c, ref, h] = results;
-    const L = [];
-    L.push(['Stack', state.name].map(q).join(','));
-    L.push(['Result', state.result].map(q).join(','));
-    L.push(['Lower limit', state.lsl, 'Upper limit', state.usl].map(q).join(','));
-    L.push('');
-    L.push(['#', 'Contributor', 'Type', 'Direction', 'Mean @20C', 'Half range @20C', 'Variance share', 'Note'].map(q).join(','));
-    state.rows.forEach((r, i) => {
-      const m = ref.models[i];
-      L.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '-' : '+', m.err ? '' : m.m.toFixed(5), m.err ? '' : m.h.toFixed(5), m.err ? '' : (m.varShare * 100).toFixed(2) + '%', m.err || noteOf(m.info)].map(q).join(','));
-    });
-    L.push('');
-    L.push(['Metric', 'Cold ' + c.T + 'C', 'Ref 20C', 'Hot ' + h.T + 'C'].map(q).join(','));
-    const row = (name, f) => L.push([name].concat(results.map(f)).map(q).join(','));
-    row('Nominal (mean of zones)', x => x.nominal.toFixed(5));
-    row('Worst case min', x => x.wcLo.toFixed(5));
-    row('Worst case max', x => x.wcHi.toFixed(5));
-    row('RSS min', x => x.rssLo.toFixed(5));
-    row('RSS max', x => x.rssHi.toFixed(5));
-    row('MC mean', x => x.mc.mean.toFixed(5));
-    row('MC std dev', x => x.mc.sd.toFixed(5));
-    row('MC 0.135%', x => x.mc.pLo.toFixed(5));
-    row('MC 99.865%', x => x.mc.pHi.toFixed(5));
-    row('MC below lower limit', x => x.mc.below + ' of ' + x.mc.n);
-    row('MC above upper limit', x => x.mc.above + ' of ' + x.mc.n);
-    row('Cpk', x => isFinite(x.cpk) ? x.cpk.toFixed(3) : '');
-    return L.join('\n');
+  /* ---------- exports: CSV and Excel share one table model, in the display unit ---------- */
+  function download(name, blob) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast('Downloaded ' + name, true);
   }
+  function fileBase() {
+    const s = String(state.name || 'stack').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return (s || 'stack') + '-tolerance-stack';
+  }
+  const MAT_NAME = id => (E.MATERIALS.find(m => m.id === id) || {}).name || '';
+  const EFF_NAME = id => (EFF.find(e => e[0] === id) || EFF[0])[1];
+  const DIST_NAME = id => (DIST.find(d => d[0] === id) || DIST[0])[1];
+  function devPair(up, lo) {
+    const d = x => (Math.abs(x) < 1e-12 ? '0' : (x > 0 ? '+' : '−') + lenTxt(Math.abs(x)));
+    return d(up) + '/' + d(lo);
+  }
+  // One-line specification of a contributor, as on a drawing
+  function specTxt(r, m) {
+    if (!m || m.err) return '';
+    const i = m.info, u = LU();
+    if (i.kind === 'lin') {
+      const n = lenTxt(i.nom);
+      if (i.mode === 'iso286') return n + ' ' + i.code + ' (' + devPair(i.up, i.lo) + ')';
+      if (i.mode === 'iso2768') return n + ' ±' + lenTxt(i.up) + ' (ISO 2768-' + i.cls + ')';
+      return n + ' ' + devPair(i.up, i.lo) + ' ' + u;
+    }
+    if (i.kind === 'ang') return noteOf(i);
+    if (i.kind === 'fit') return 'Ø' + lenTxt(i.D) + ' ' + (i.hole.code || devPair(i.hole.up, i.hole.lo)) + ' / ' + (i.shaft.code || devPair(i.shaft.up, i.shaft.lo)) + ' · ' + EFF_NAME(r.eff).toLowerCase();
+    return lenTxt(i.pmin) + '…' + lenTxt(i.pmax) + ' ' + u + ' · ' + EFF_NAME(r.eff).toLowerCase();
+  }
+  function materialTxt(r) {
+    const one = (id, a) => (id === 'custom' ? 'Custom α ' + +toU(E.num(a, 0), 'alpha').toFixed(2) : MAT_NAME(id));
+    if (r.type === 'lin') return one(r.mat, r.alpha);
+    if (r.type === 'fit') return 'hole ' + one(r.hMat, r.hAlpha) + ', shaft ' + one(r.sMat, r.sAlpha);
+    return '';
+  }
+  const rnd = (x, d) => (isFinite(x) ? +x.toFixed(d) : '');
+  // YYYY-MM-DD HH:MM in the viewer's own time zone
+  function localStamp(dateOnly) {
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const day = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    return dateOnly ? day : day + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  const LD = () => (imp() ? 6 : 5);
+  function exportTables() {
+    const u = LU(), [c, ref, h] = results, ld = LD();
+    const tl = T => tempTxt(T);
+    const contributors = [['#', 'Contributor', 'Type', 'Direction', 'Factor', 'Specification', 'Material', 'Distribution',
+      'Mean at ' + tl(20) + ' (' + u + ')', 'Half range (' + u + ')', 'Min (' + u + ')', 'Max (' + u + ')',
+      'Mean at ' + tl(c.T) + ' (' + u + ')', 'Mean at ' + tl(h.T) + ' (' + u + ')', 'Variance share (%)', 'Worst-case share (%)', 'Input error']];
+    state.rows.forEach((r, i) => {
+      const m = ref.models[i], mc = c.models[i], mh = h.models[i], ok = !m.err;
+      const L2 = x => (ok ? rnd(toU(x, 'len'), ld) : '');
+      contributors.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '−' : '+', E.num(r.k, 1), specTxt(r, m), materialTxt(r), DIST_NAME(r.dist),
+        L2(m.m), L2(m.h), L2(m.m - m.h), L2(m.m + m.h),
+        mc.err ? '' : rnd(toU(mc.m, 'len'), ld), mh.err ? '' : rnd(toU(mh.m, 'len'), ld),
+        ok ? rnd(m.varShare * 100, 2) : '', ok ? rnd(m.wcShare * 100, 2) : '', m.err || '']);
+    });
+
+    const lsl = ref.lsl, usl = ref.usl;
+    const res = [
+      ['Stack', state.name], ['Result', state.result],
+      ['Lower limit (' + u + ')', isFinite(lsl) ? rnd(toU(lsl, 'len'), ld) : ''], ['Upper limit (' + u + ')', isFinite(usl) ? rnd(toU(usl, 'len'), ld) : ''],
+      ['Units', imp() ? 'Imperial (in, °F)' : 'SI (mm, °C)'], ['Monte Carlo runs', results[0].mc.n], ['Exported', localStamp()],
+      [],
+      ['Metric'].concat(results.map(x => 'Ambient ' + tl(x.T)))
+    ];
+    const row = (name, f) => res.push([name].concat(results.map(f)));
+    const Lr = v => rnd(toU(v, 'len'), ld);
+    row('Status', x => status(x)[1]);
+    row('Mean of zones (' + u + ')', x => Lr(x.nominal));
+    row('Worst case min (' + u + ')', x => Lr(x.wcLo));
+    row('Worst case max (' + u + ')', x => Lr(x.wcHi));
+    row('RSS min (' + u + ')', x => Lr(x.rssLo));
+    row('RSS max (' + u + ')', x => Lr(x.rssHi));
+    row('MC mean (' + u + ')', x => Lr(x.mc.mean));
+    row('MC standard deviation (' + u + ')', x => Lr(x.mc.sd));
+    row('MC 0.135 % quantile (' + u + ')', x => Lr(x.mc.pLo));
+    row('MC 99.865 % quantile (' + u + ')', x => Lr(x.mc.pHi));
+    row('MC min (' + u + ')', x => Lr(x.mc.min));
+    row('MC max (' + u + ')', x => Lr(x.mc.max));
+    row('MC runs below lower limit', x => x.mc.below);
+    row('MC runs above upper limit', x => x.mc.above);
+    row('Out of limits (ppm)', x => Math.round((x.mc.below + x.mc.above) / x.mc.n * 1e6));
+    row('Cpk', x => rnd(x.cpk, 3));
+
+    const hb = histBins(60);
+    const hist = [['Bin from (' + u + ')', 'Bin to (' + u + ')', 'Bin centre (' + u + ')'].concat(results.map(x => 'Count at ' + tl(x.T))).concat(results.map(x => 'Share at ' + tl(x.T) + ' (%)'))];
+    hb.edges.forEach((e, b) => {
+      hist.push([Lr(e), Lr(e + hb.bw), Lr(e + hb.bw / 2)].concat(hb.counts.map(cn => cn[b])).concat(hb.counts.map((cn, ci) => rnd(cn[b] / results[ci].mc.n * 100, 3))));
+    });
+    return { contributors, results: res, hist };
+  }
+  // Common bins across the three temperature cases, so the columns line up
+  function histBins(B) {
+    let lo = Infinity, hi = -Infinity;
+    results.forEach(x => { lo = Math.min(lo, x.mc.qLo, x.wcLo); hi = Math.max(hi, x.mc.qHi, x.wcHi); });
+    const bw = (hi - lo) / B || 1e-6;
+    const edges = Array.from({ length: B }, (_, b) => lo + b * bw);
+    const counts = results.map(x => {
+      const cn = new Array(B).fill(0), s = x.mc.samples;
+      for (let i = 0; i < s.length; i++) { const b = Math.floor((s[i] - lo) / bw); cn[b < 0 ? 0 : b >= B ? B - 1 : b]++; }
+      return cn;
+    });
+    return { edges, bw, counts };
+  }
+  function csv() {
+    const t = exportTables();
+    const q = v => (typeof v === 'number' ? String(v) : '"' + String(v ?? '').replace(/"/g, '""') + '"');
+    const block = (title, rows) => [q(title)].concat(rows.map(r => r.map(q).join(','))).join('\r\n');
+    return '﻿' + [block('RESULTS', t.results), block('CONTRIBUTORS', t.contributors), block('HISTOGRAM', t.hist)].join('\r\n\r\n') + '\r\n';
+  }
+  $('#dlCsv').addEventListener('click', () => download(fileBase() + '.csv', new Blob([csv()], { type: 'text/csv;charset=utf-8' })));
+
+  let xlsxLoading = null;
+  function loadXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (!xlsxLoading) xlsxLoading = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = () => res(window.XLSX);
+      s.onerror = () => { xlsxLoading = null; rej(new Error('The Excel library did not load. Check your connection and try again.')); };
+      document.head.appendChild(s);
+    });
+    return xlsxLoading;
+  }
+  $('#dlXlsx').addEventListener('click', async () => {
+    const b = $('#dlXlsx');
+    b.disabled = true;
+    try {
+      const X = await loadXLSX();
+      const t = exportTables();
+      const sheet = (rows, widths) => { const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = widths.map(w => ({ wch: w })); return ws; };
+      const wb = X.utils.book_new();
+      X.utils.book_append_sheet(wb, sheet(t.contributors, [4, 36, 13, 9, 7, 40, 34, 16, 14, 14, 14, 14, 14, 14, 12, 12, 30]), 'Contributors');
+      X.utils.book_append_sheet(wb, sheet(t.results, [34, 18, 18, 18]), 'Results by temperature');
+      X.utils.book_append_sheet(wb, sheet(t.hist, [14, 14, 14, 12, 12, 12, 12, 12, 12]), 'Histogram data');
+      const name = fileBase() + '.xlsx';
+      X.writeFile(wb, name);
+      toast('Downloaded ' + name, true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally { b.disabled = false; }
+  });
 
   /* ---------- compute ---------- */
   function schedule() { clearTimeout(timer); timer = setTimeout(compute, 220); }
