@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tolerance Chain Calculator</title>
+<meta name="description" content="Free 1D tolerance stack-up calculator with ISO 286 fits, ISO 2768-1, thermal expansion, angular deviations and play. Worst case, RSS and Monte Carlo.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: contributor cards on the left, a sticky results rail on the right; one column under 1080px.
+   Palette: cool steel greys with a machined-teal accent, like a measuring room drawing. */
+:root {
+  --bg: #edf0ee;
+  --panel: #fbfcfb;
+  --field: #ffffff;
+  --ink: #15201e;
+  --muted: #5b6967;
+  --line: #d2d9d6;
+  --line-strong: #aebab6;
+  --accent: #0b6670;
+  --accent-ink: #ffffff;
+  --accent-soft: #d9ebea;
+  --ok: #1c7642;
+  --ok-soft: #dbeee1;
+  --warn: #935900;
+  --warn-soft: #f5e7cc;
+  --bad: #ae2a20;
+  --bad-soft: #f6dcd8;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
+    --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
+    --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
+  --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
+  --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.45; }
+.app { max-width: 1480px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num, input[inputmode="decimal"], td, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line-strong); margin-bottom: 18px; }
+.brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.brand svg { flex: none; }
+.brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--line-strong); background: var(--panel); border-radius: var(--r); padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.small { padding: 3px 9px; font-size: 13px; }
+select.btn { padding-right: 8px; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 500px); gap: 20px; align-items: start; }
+.editor, .results { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.results { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow-y: auto; padding-bottom: 4px; }
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .results { position: static; max-height: none; overflow: visible; }
+}
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.hint { color: var(--muted); font-size: 12.5px; }
+
+/* fields */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px 10px; }
+.fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fld.wide { grid-column: span 2; }
+.lab { font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lab em { font-style: normal; opacity: 0.8; }
+.fld input, .fld select { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--field); border-radius: 4px; padding: 5px 7px; font-size: 13.5px; }
+.fld input:hover, .fld select:hover { border-color: var(--line-strong); }
+.setup .grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
+.setup .fld.name { grid-column: span 2; }
+.setup .fld.res { grid-column: 1 / -1; }
+
+/* contributor cards */
+.rows-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 4px 2px 0; }
+#rows { display: flex; flex-direction: column; gap: 10px; }
+.row { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px 10px; display: flex; flex-direction: column; gap: 10px; }
+.row.has-err { border-color: var(--bad); }
+.row-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.idx { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 18px; text-align: right; }
+.dir { width: 30px; height: 30px; flex: none; border-radius: 50%; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); font-family: var(--font-mono); font-size: 17px; font-weight: 500; line-height: 1; cursor: pointer; }
+.dir.neg { background: var(--accent); color: var(--accent-ink); }
+.name { flex: 1 1 auto; min-width: 60px; border: 1px solid transparent; background: transparent; border-radius: 4px; padding: 4px 6px; font-weight: 600; font-size: 14.5px; }
+.name:hover, .name:focus { border-color: var(--line); background: var(--field); }
+.tag { flex: none; font-family: var(--font-display); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px; }
+.acts { display: flex; gap: 2px; flex: none; }
+.ico { width: 28px; height: 28px; border: 1px solid transparent; background: transparent; border-radius: 4px; cursor: pointer; color: var(--muted); font-size: 14px; line-height: 1; }
+.ico:hover { border-color: var(--line); color: var(--ink); }
+.ico.del:hover { color: var(--bad); }
+.foot { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 7px; overflow-wrap: anywhere; }
+.foot b { font-family: var(--font-mono); font-weight: 500; color: var(--ink); }
+.foot .err { color: var(--bad); font-weight: 500; }
+@media (max-width: 560px) {
+  .row-top { flex-wrap: wrap; }
+  .name { flex-basis: calc(100% - 70px); }
+  .tag { margin-left: 56px; }
+  .acts { margin-left: auto; }
+  .fld.wide { grid-column: auto; }
+  .setup .fld.name { grid-column: 1 / -1; }
+}
+.addbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border: 1.5px dashed var(--line-strong); border-radius: var(--r); }
+.addbar span { color: var(--muted); font-size: 13px; margin-right: 4px; }
+
+/* chain diagram */
+.scrollx { overflow-x: auto; }
+#chainSvg { display: block; width: 100%; min-width: 560px; height: auto; }
+.ch-lab { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+.ch-val { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.ch-line { stroke: var(--ink); stroke-width: 1.6; fill: none; }
+.ch-head { fill: var(--ink); }
+.ch-res { stroke: var(--accent); stroke-width: 3; }
+.ch-res-head { fill: var(--accent); }
+.ch-res-lab { fill: var(--accent); font-family: var(--font-display); font-weight: 600; font-size: 12.5px; }
+.ch-guide { stroke: var(--line-strong); stroke-dasharray: 3 3; stroke-width: 1; }
+.ch-dot { fill: var(--panel); stroke: var(--ink); stroke-width: 1.4; }
+.ch-err { fill: var(--bad); font-family: var(--font-body); font-size: 11px; }
+
+/* results */
+.res-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+#toast[hidden], #toastUndo[hidden] { display: none; }
+.res-table th { font-family: var(--font-display); font-weight: 600; text-align: right; padding: 4px 6px; color: var(--muted); font-size: 12px; letter-spacing: 0.03em; }
+.res-table th:first-child, .res-table td:first-child { text-align: left; font-family: var(--font-body); color: var(--muted); padding-left: 0; }
+.res-table td { text-align: right; padding: 5px 6px; border-top: 1px solid var(--line); white-space: nowrap; }
+.res-table tr.sep td { border-top: 1px solid var(--line-strong); }
+.res-table td.bad { color: var(--bad); font-weight: 500; }
+.res-table td.okv { color: var(--ok); }
+.res-table td:last-child, .res-table th:last-child { padding-right: 0; }
+.pill { display: inline-block; font-family: var(--font-display); font-weight: 600; font-size: 11.5px; letter-spacing: 0.04em; border-radius: 99px; padding: 2px 8px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.none { background: var(--accent-soft); color: var(--muted); }
+.res-caption { font-size: 13px; margin: -4px 0 10px; color: var(--ink); font-weight: 500; }
+
+.tabs { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--r); overflow: hidden; }
+.tabs button { border: 0; background: transparent; padding: 4px 10px; cursor: pointer; font-size: 12.5px; font-family: var(--font-mono); }
+.tabs button + button { border-left: 1px solid var(--line-strong); }
+.tabs button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+#hist { display: block; width: 100%; height: auto; }
+.h-bar { fill: var(--accent); opacity: 0.75; }
+.h-bar.out { fill: var(--bad); opacity: 0.9; }
+.h-axis { stroke: var(--line-strong); stroke-width: 1; }
+.h-tick { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.h-spec { stroke: var(--bad); stroke-width: 1.4; stroke-dasharray: 4 3; }
+.h-spec-lab { fill: var(--bad); font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+.h-br { stroke: var(--ink); stroke-width: 1.4; }
+.h-br.rss { stroke: var(--accent); }
+.h-br-lab { fill: var(--ink); font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+.h-br-lab.rss { fill: var(--accent); }
+.h-mean { stroke: var(--ink); stroke-width: 1; opacity: 0.6; }
+
+.par { display: flex; flex-direction: column; gap: 8px; }
+.par-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; font-size: 12.5px; }
+.par-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.par-name .mono { color: var(--muted); margin-right: 6px; }
+.par-num { font-family: var(--font-mono); color: var(--muted); font-size: 12px; }
+.par-track { grid-column: 1 / -1; height: 7px; background: var(--accent-soft); border-radius: 4px; overflow: hidden; }
+.par-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+
+details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+details.panel[open] > summary { margin-bottom: 12px; }
+.io-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+#ioText { width: 100%; min-height: 160px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); background: var(--field); border-radius: 4px; padding: 8px; resize: vertical; }
+.notes { max-width: 72ch; color: var(--ink); font-size: 13.5px; }
+.notes dt { font-weight: 600; margin-top: 10px; }
+.notes dd { margin: 2px 0 0; color: var(--muted); }
+.notes code { font-family: var(--font-mono); font-size: 12.5px; }
+
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 8px 10px 8px 14px; display: flex; gap: 12px; align-items: center; font-size: 13px; z-index: 20; box-shadow: 0 6px 24px rgba(0,0,0,0.2); max-width: calc(100% - 32px); }
+#toast button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 10px; cursor: pointer; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: no-preference) { .par-fill { transition: width 0.25s ease; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="6" fill="var(--accent)"/><path d="M8 14h24M8 26h14" stroke="var(--accent-ink)" stroke-width="2"/><path d="M8 10v8M32 10v8M8 22v8M22 22v8" stroke="var(--accent-ink)" stroke-width="1.6"/><path d="M11 14l3-2v4zM29 14l-3-2v4z" fill="var(--accent-ink)"/></svg>
+      <div>
+        <h1>Tolerance Chain Calculator</h1>
+        <p>1D stack-up · ISO 286-1 fits · ISO 2768-1 · thermal expansion at 20 °C reference · play · worst case, RSS, Monte Carlo</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="sr" for="example">Load an example stack</label>
+      <select id="example" class="btn">
+        <option value="">Load example…</option>
+        <option value="bearing">Bearing cover axial gap</option>
+        <option value="pins">Pin-located sensor bracket</option>
+        <option value="gear">Gear centre distance with bearing play</option>
+      </select>
+      <button class="btn" id="newStack" type="button">New stack</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="editor" aria-label="Stack editor">
+      <div class="panel setup">
+        <div class="panel-head"><h2>Stack</h2><span class="hint">Saved in this browser as you type</span></div>
+        <div class="grid">
+          <label class="fld name" for="st-name"><span class="lab">Stack name</span><input id="st-name" data-s="name" autocomplete="off"></label>
+          <label class="fld" for="st-lsl"><span class="lab">Lower limit <em>mm</em></span><input id="st-lsl" data-s="lsl" inputmode="decimal" placeholder="none"></label>
+          <label class="fld" for="st-usl"><span class="lab">Upper limit <em>mm</em></span><input id="st-usl" data-s="usl" inputmode="decimal" placeholder="none"></label>
+          <label class="fld" for="st-tCold"><span class="lab">Ambient min <em>°C</em></span><input id="st-tCold" data-s="tCold" inputmode="decimal"></label>
+          <label class="fld" for="st-tHot"><span class="lab">Ambient max <em>°C</em></span><input id="st-tHot" data-s="tHot" inputmode="decimal"></label>
+          <label class="fld" for="st-n"><span class="lab">Monte Carlo runs</span>
+            <select id="st-n" data-s="n"><option value="20000">20 000</option><option value="50000">50 000</option><option value="100000">100 000</option><option value="250000">250 000</option></select>
+          </label>
+          <label class="fld res" for="st-result"><span class="lab">What the result measures</span><input id="st-result" data-s="result" autocomplete="off" placeholder="e.g. Axial gap between cover and bearing"></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Chain at 20 °C</h2><span class="hint">Arrows to the right add, to the left subtract. Circles are zero-nominal contributors.</span></div>
+        <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram"></svg></div>
+      </div>
+
+      <div class="rows-head"><h2>Contributors</h2><span class="hint mono">result = Σ direction × factor × value</span></div>
+      <div id="rows"></div>
+      <div class="addbar">
+        <span>Add</span>
+        <button class="btn small" type="button" data-add="lin">Dimension</button>
+        <button class="btn small" type="button" data-add="ang">Angle / form</button>
+        <button class="btn small" type="button" data-add="fit">Fit / pin</button>
+        <button class="btn small" type="button" data-add="play">Play / clearance</button>
+      </div>
+
+      <details class="panel" id="ioPanel">
+        <summary>Import and export</summary>
+        <div class="io-actions">
+          <button class="btn small" type="button" id="copyJson">Copy stack JSON</button>
+          <button class="btn small" type="button" id="copyCsv">Copy results CSV</button>
+          <button class="btn small" type="button" id="loadText">Load JSON from box</button>
+          <label class="btn small" for="fileIn">Open .json file</label>
+          <input class="sr" type="file" id="fileIn" accept=".json,application/json">
+        </div>
+        <label class="sr" for="ioText">Stack JSON</label>
+        <textarea id="ioText" spellcheck="false" placeholder="Copied JSON appears here. Paste a saved stack here and press Load."></textarea>
+      </details>
+
+      <details class="panel">
+        <summary>Method notes</summary>
+        <dl class="notes">
+          <dt>Sign convention</dt>
+          <dd>Each contributor has a direction (+ adds to the result, − subtracts) and an optional factor, e.g. a lever ratio. Worst case and RSS use each contributor's mean (centre of its zone) and half range <code>h</code>.</dd>
+          <dt>Worst case and RSS</dt>
+          <dd>Worst case is <code>Σm ± Σh</code>. RSS is <code>Σm ± √Σh²</code>, which assumes every tolerance is a centred ±3σ normal process.</dd>
+          <dt>Monte Carlo</dt>
+          <dd>Each contributor is sampled from its own distribution. Normal means the tolerance zone is ±3σ about its centre, unbounded, so a few samples land past the worst case. Contribution bars show the share of result variance.</dd>
+          <dt>Thermal expansion</dt>
+          <dd>Sizes are defined at 20 °C (ISO 1). A part at ambient T plus its own ΔT grows by <code>α·L·(T + ΔT − 20)</code>. Fits change clearance by <code>D·(α_hole·ΔT_hole − α_shaft·ΔT_shaft)</code>.</dd>
+          <dt>Angle and form</dt>
+          <dd>An angular tolerance ±θ moves a point at lever arm L by <code>L·tan θ</code>. A geometric zone t over length Lz (perpendicularity, parallelism) is treated as a tilt of up to <code>t / Lz</code>. ISO 2768-1 angles use the shorter leg length.</dd>
+          <dt>Fits, pins and play</dt>
+          <dd>Clearance is diametral: <code>hole − shaft</code>. Floating means the part can sit anywhere within ±½ clearance (uniform). Pushed to one side gives +½ clearance, e.g. under gravity or a spring. Where clearance is zero or negative (transition or interference) the float is zero.</dd>
+          <dt>ISO 286 codes</dt>
+          <dd>Deviations are computed from the ISO 286-1 fundamental deviation rules for 0–500 mm, letters D–H, JS, K, M, N, P, R, S (holes) and d–h, js, k, m, n, p, r, s (shafts), grades IT4–IT13. Check critical fits against the published tables, which list a few special cases. Rolling bearing ring tolerances (ISO 492) go in as plain deviations.</dd>
+        </dl>
+      </details>
+    </section>
+
+    <aside class="results" aria-label="Results">
+      <div class="panel">
+        <div class="panel-head"><h2>Result</h2><span class="hint" id="mcInfo"></span></div>
+        <p class="res-caption" id="resCaption"></p>
+        <div class="scrollx"><table class="res-table" id="resTable"></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Distribution</h2><div class="tabs" id="caseTabs" role="group" aria-label="Temperature case"></div></div>
+        <svg id="hist" viewBox="0 0 480 250" role="img" aria-label="Monte Carlo histogram of the result"></svg>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Contribution at 20 °C</h2><span class="hint">share of variance · share of worst case</span></div>
+        <div class="par" id="pareto"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
+
+<script src="engine.js" charset="utf-8"></script>
+<script>
+(function () {
+  'use strict';
+  const E = window.TCE;
+  const KEY = 'tcc.v1';
+  const $ = s => document.querySelector(s);
+  let state, nextId = 1, results = null, activeCase = 'ref', timer = 0, undoState = null, toastTimer = 0, newArmed = 0;
+
+  const TYPE_NAME = { lin: 'Dimension', ang: 'Angle / form', fit: 'Fit / pin', play: 'Play' };
+  const DIST = [['normal', 'Normal, ±3σ'], ['uniform', 'Uniform'], ['triangular', 'Triangular']];
+  const MATS = E.MATERIALS.map(m => [m.id, m.alpha == null ? 'Custom α…' : m.alpha === 0 ? m.name : m.name + ' · ' + m.alpha]);
+  const EFF = [['float', 'Floats ±½ clearance'], ['side', 'Pushed to one side'], ['full', 'Full clearance adds']];
+  const CLS = [['f', 'f · fine'], ['m', 'm · medium'], ['c', 'c · coarse'], ['v', 'v · very coarse']];
+
+  function newRow(type) {
+    const b = { id: nextId++, type, dir: 1, k: '1', dist: 'normal' };
+    if (type === 'lin') return Object.assign(b, { label: 'Dimension', nom: '10', tolMode: 'dev', up: '0.05', lo: '-0.05', iso: 'h7', cls: 'm', mat: 'steel', alpha: '', dT: '0' });
+    if (type === 'ang') return Object.assign(b, { label: 'Angular deviation', L: '20', angMode: 'angle', ang: '0.1', unit: 'deg', t: '0.02', Lz: '20', cls: 'm', leg: '' });
+    if (type === 'fit') return Object.assign(b, { label: 'Pin in hole', D: '6', hMode: 'iso', hIso: 'H7', hUp: '0.012', hLo: '0', sMode: 'iso', sIso: 'g6', sUp: '-0.004', sLo: '-0.012', hMat: 'steel', sMat: 'steel', hAlpha: '', sAlpha: '', dTh: '0', dTs: '0', eff: 'float' });
+    return Object.assign(b, { label: 'Play', pmin: '0.01', pmax: '0.03', eff: 'float', dist: 'uniform' });
+  }
+  function mk(type, o) { return Object.assign(newRow(type), o); }
+
+  const EXAMPLES = {
+    bearing: () => ({
+      name: 'Bearing cover', result: 'Axial gap between cover spigot and bearing outer ring', lsl: '0.05', usl: '0.40', tCold: '-20', tHot: '80', n: '100000',
+      rows: [
+        mk('lin', { label: 'Housing: bore shoulder to face', nom: '30', up: '0.05', lo: '-0.05', mat: 'al' }),
+        mk('lin', { label: 'Bearing 6204 width B (ISO 492 normal)', dir: -1, nom: '14', up: '0', lo: '-0.12', mat: 'bearing' }),
+        mk('lin', { label: 'Spacer ring', dir: -1, nom: '12', tolMode: 'iso286', iso: 'h8', mat: 'steel' }),
+        mk('lin', { label: 'Cover spigot height', dir: -1, nom: '3.8', tolMode: 'iso2768', cls: 'f', mat: 'al' }),
+        mk('ang', { label: 'Cover tilt after screw tightening', L: '26', ang: '0.05', unit: 'deg', dist: 'uniform' }),
+        mk('ang', { label: 'Shoulder perpendicularity 0.02 over Ø52', L: '26', angMode: 'zone', t: '0.02', Lz: '52' })
+      ]
+    }),
+    pins: () => ({
+      name: 'Sensor bracket', result: 'Sensor axis X position from base datum', lsl: '44.92', usl: '45.08', tCold: '10', tHot: '40', n: '100000',
+      rows: [
+        mk('lin', { label: 'Base: datum to dowel hole', nom: '20', up: '0.01', lo: '-0.01', mat: 'steel' }),
+        mk('fit', { label: 'Ø6 dowel (m6) in bracket slip hole', D: '6', hIso: 'F7', sIso: 'm6', hMat: 'al', sMat: 'steel' }),
+        mk('lin', { label: 'Bracket: dowel hole to sensor bore', nom: '25', up: '0.015', lo: '-0.015', mat: 'al' }),
+        mk('fit', { label: 'Sensor Ø8 in bore', D: '8', hIso: 'H7', sIso: 'g6', hMat: 'al', sMat: 'ssa' }),
+        mk('ang', { label: 'Sensor tilt: perpendicularity 0.02 over 10', L: '12', angMode: 'zone', t: '0.02', Lz: '10' }),
+        mk('lin', { label: 'Sensing axis offset (datasheet)', nom: '0', up: '0.02', lo: '-0.02', mat: 'none' })
+      ]
+    }),
+    gear: () => ({
+      name: 'Gearbox centre distance', result: 'Centre distance between pinion and gear shafts', lsl: '39.95', usl: '40.05', tCold: '-20', tHot: '70', n: '100000',
+      rows: [
+        mk('lin', { label: 'Housing: bore-to-bore distance', nom: '40', up: '0.02', lo: '-0.02', mat: 'alc' }),
+        mk('fit', { label: 'Bearing 1 OD Ø32 in housing bore', D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
+        mk('play', { label: 'Bearing 1 radial clearance (6201, CN)', pmin: '0.003', pmax: '0.018' }),
+        mk('fit', { label: 'Bearing 2 OD Ø32 in housing bore', dir: -1, D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
+        mk('play', { label: 'Bearing 2 radial clearance (6201, CN)', dir: -1, pmin: '0.003', pmax: '0.018' }),
+        mk('lin', { label: 'Gear runout at pitch circle', nom: '0', up: '0.01', lo: '-0.01', mat: 'none' })
+      ]
+    })
+  };
+  function blank() {
+    return { name: 'New stack', result: '', lsl: '', usl: '', tCold: '20', tHot: '20', n: '100000', rows: [mk('lin', { label: 'Dimension A' }), mk('lin', { label: 'Dimension B', dir: -1, nom: '9.8' })] };
+  }
+
+  /* ---------- formatting ---------- */
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function fmt(x, d) {
+    d = d == null ? 4 : d;
+    if (!isFinite(x)) return '—';
+    const t = Math.abs(x).toFixed(d);
+    return (x < 0 && +t !== 0 ? '−' : '') + t;
+  }
+  function fmtS(x, d) {
+    d = d == null ? 4 : d;
+    if (!isFinite(x)) return '—';
+    const t = Math.abs(x).toFixed(d);
+    return (+t === 0 ? '' : x < 0 ? '−' : '+') + t;
+  }
+  function um(x) { const v = Math.round(x * 10000) / 10; return (v < 0 ? '−' : '') + Math.abs(v); }
+  function pct(x) { return isFinite(x) ? (x * 100 >= 9.95 ? (x * 100).toFixed(0) : (x * 100).toFixed(1)) + '%' : '—'; }
+  function ppm(count, n) {
+    if (!count) return '0';
+    const p = count / n * 1e6;
+    return p >= 10000 ? (count / n * 100).toFixed(1) + '%' : Math.round(p).toLocaleString('en-US') + ' ppm';
+  }
+
+  /* ---------- persistence ---------- */
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  function normalize(o) {
+    if (!o || !Array.isArray(o.rows)) throw new Error('This JSON has no "rows" list');
+    nextId = 1;
+    const rows = o.rows.map(r => {
+      if (!r || !TYPE_NAME[r.type]) throw new Error('Unknown contributor type: ' + (r && r.type));
+      return Object.assign(newRow(r.type), r, { id: nextId++ });
+    });
+    const b = blank();
+    return { name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'), rows };
+  }
+  function load() {
+    try { const raw = localStorage.getItem(KEY); if (raw) return normalize(JSON.parse(raw)); } catch (e) { /* fall through */ }
+    return normalize(EXAMPLES.bearing());
+  }
+  function replaceState(next, msg) {
+    undoState = JSON.stringify(state);
+    state = normalize(next);
+    renderAll();
+    toast(msg);
+  }
+
+  /* ---------- toast ---------- */
+  function toast(msg, noUndo) {
+    $('#toastMsg').textContent = msg;
+    $('#toastUndo').hidden = !!noUndo;
+    $('#toast').hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 6000);
+  }
+  $('#toastUndo').addEventListener('click', () => {
+    if (!undoState) return;
+    state = normalize(JSON.parse(undoState));
+    undoState = null;
+    renderAll();
+    $('#toast').hidden = true;
+  });
+
+  /* ---------- contributor cards ---------- */
+  function fld(r, k, label, unit, o) {
+    o = o || {};
+    const id = 'r' + r.id + '-' + k;
+    return '<label class="fld' + (o.wide ? ' wide' : '') + '" for="' + id + '"><span class="lab">' + label + (unit ? ' <em>' + unit + '</em>' : '') + '</span>' +
+      '<input id="' + id + '" data-id="' + r.id + '" data-k="' + k + '" value="' + esc(r[k]) + '"' + (o.text ? '' : ' inputmode="decimal"') +
+      (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' autocomplete="off" spellcheck="false"></label>';
+  }
+  function pick(r, k, label, opts, struct) {
+    const id = 'r' + r.id + '-' + k;
+    return '<label class="fld" for="' + id + '"><span class="lab">' + label + '</span><select id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (struct ? ' data-struct' : '') + '>' +
+      opts.map(([v, t]) => '<option value="' + esc(v) + '"' + (String(r[k]) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>';
+  }
+  function mat(r, k, ak, label) { return pick(r, k, label, MATS, true) + (r[k] === 'custom' ? fld(r, ak, 'α', '10⁻⁶/K') : ''); }
+  const common = r => pick(r, 'dist', 'Distribution', DIST) + fld(r, 'k', 'Factor', '×');
+
+  function body(r) {
+    if (r.type === 'lin') {
+      let h = fld(r, 'nom', 'Nominal', 'mm') + pick(r, 'tolMode', 'Tolerance', [['dev', 'Deviations'], ['iso286', 'ISO 286 code'], ['iso2768', 'ISO 2768-1']], true);
+      if (r.tolMode === 'iso286') h += fld(r, 'iso', 'Code', 'h7, H8, js9', { text: true });
+      else if (r.tolMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS);
+      else h += fld(r, 'up', 'Upper dev.', 'mm') + fld(r, 'lo', 'Lower dev.', 'mm');
+      return h + mat(r, 'mat', 'alpha', 'Material · α 10⁻⁶/K') + fld(r, 'dT', 'Part ΔT vs ambient', '°C') + common(r);
+    }
+    if (r.type === 'ang') {
+      let h = fld(r, 'L', 'Lever arm L', 'mm') + pick(r, 'angMode', 'Tolerance', [['angle', 'Angle ±'], ['zone', 'Geometric zone'], ['iso2768', 'ISO 2768-1']], true);
+      if (r.angMode === 'zone') h += fld(r, 't', 'Zone t', 'mm') + fld(r, 'Lz', 'Over length', 'mm');
+      else if (r.angMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS) + fld(r, 'leg', 'Shorter leg', 'mm', { ph: 'L' });
+      else h += fld(r, 'ang', 'Angle ±', '') + pick(r, 'unit', 'Unit', [['deg', 'degrees'], ['arcmin', 'arcmin'], ['arcsec', 'arcsec'], ['mmm', 'mm/m']]);
+      return h + common(r);
+    }
+    if (r.type === 'fit') {
+      let h = fld(r, 'D', 'Diameter', 'mm') + pick(r, 'eff', 'Effect on chain', EFF);
+      h += pick(r, 'hMode', 'Hole tolerance', [['iso', 'ISO 286 code'], ['dev', 'Deviations']], true);
+      h += r.hMode === 'dev' ? fld(r, 'hUp', 'Hole ES', 'mm') + fld(r, 'hLo', 'Hole EI', 'mm') : fld(r, 'hIso', 'Hole code', 'H7', { text: true });
+      h += pick(r, 'sMode', 'Shaft / pin tolerance', [['iso', 'ISO 286 code'], ['dev', 'Deviations']], true);
+      h += r.sMode === 'dev' ? fld(r, 'sUp', 'Shaft es', 'mm') + fld(r, 'sLo', 'Shaft ei', 'mm') : fld(r, 'sIso', 'Shaft code', 'g6', { text: true });
+      h += mat(r, 'hMat', 'hAlpha', 'Hole material') + mat(r, 'sMat', 'sAlpha', 'Shaft material');
+      h += fld(r, 'dTh', 'Hole ΔT', '°C') + fld(r, 'dTs', 'Shaft ΔT', '°C');
+      return h + common(r);
+    }
+    return fld(r, 'pmin', 'Min play', 'mm') + fld(r, 'pmax', 'Max play', 'mm') + pick(r, 'eff', 'Effect on chain', EFF) + common(r);
+  }
+
+  function card(r, i) {
+    const neg = +r.dir < 0;
+    return '<article class="row" data-row="' + r.id + '">' +
+      '<div class="row-top">' +
+        '<span class="idx">' + (i + 1) + '</span>' +
+        '<button type="button" class="dir ' + (neg ? 'neg' : 'pos') + '" data-act="dir" data-id="' + r.id + '" aria-label="' + (neg ? 'Subtracts from' : 'Adds to') + ' the result. Flip direction" title="Flip direction">' + (neg ? '−' : '+') + '</button>' +
+        '<input class="name" id="r' + r.id + '-label" data-id="' + r.id + '" data-k="label" value="' + esc(r.label) + '" aria-label="Contributor name" autocomplete="off">' +
+        '<span class="tag">' + TYPE_NAME[r.type] + '</span>' +
+        '<div class="acts">' +
+          '<button type="button" class="ico" data-act="up" data-id="' + r.id + '" aria-label="Move up" title="Move up">↑</button>' +
+          '<button type="button" class="ico" data-act="down" data-id="' + r.id + '" aria-label="Move down" title="Move down">↓</button>' +
+          '<button type="button" class="ico" data-act="dup" data-id="' + r.id + '" aria-label="Duplicate" title="Duplicate">⧉</button>' +
+          '<button type="button" class="ico del" data-act="del" data-id="' + r.id + '" aria-label="Remove" title="Remove">✕</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="grid">' + body(r) + '</div>' +
+      '<div class="foot" id="foot-' + r.id + '"></div>' +
+    '</article>';
+  }
+
+  function renderRows() {
+    $('#rows').innerHTML = state.rows.map(card).join('');
+    if (results) updateFoots();
+  }
+  function renderSetup() {
+    document.querySelectorAll('[data-s]').forEach(el => { el.value = state[el.dataset.s] ?? ''; });
+    if (![...$('#st-n').options].some(o => o.value === String(state.n))) $('#st-n').value = '100000';
+  }
+  function renderAll() { renderSetup(); renderRows(); compute(); }
+
+  /* ---------- events ---------- */
+  const findRow = id => state.rows.find(r => r.id === +id);
+  $('#rows').addEventListener('input', e => {
+    const t = e.target;
+    if (!t.dataset.k) return;
+    const r = findRow(t.dataset.id);
+    if (!r) return;
+    r[t.dataset.k] = t.value;
+    schedule();
+  });
+  $('#rows').addEventListener('change', e => {
+    if (e.target.hasAttribute('data-struct')) {
+      const id = e.target.id;
+      renderRows();
+      const el = document.getElementById(id);
+      if (el) el.focus();
+    }
+  });
+  $('#rows').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const i = state.rows.findIndex(r => r.id === +b.dataset.id);
+    if (i < 0) return;
+    const act = b.dataset.act;
+    if (act === 'dir') state.rows[i].dir = +state.rows[i].dir < 0 ? 1 : -1;
+    else if (act === 'up' && i > 0) state.rows.splice(i - 1, 0, state.rows.splice(i, 1)[0]);
+    else if (act === 'down' && i < state.rows.length - 1) state.rows.splice(i + 1, 0, state.rows.splice(i, 1)[0]);
+    else if (act === 'dup') state.rows.splice(i + 1, 0, Object.assign({}, state.rows[i], { id: nextId++, label: state.rows[i].label + ' (copy)' }));
+    else if (act === 'del') {
+      undoState = JSON.stringify(state);
+      const gone = state.rows.splice(i, 1)[0];
+      toast('Removed “' + (gone.label || TYPE_NAME[gone.type]) + '”');
+    } else return;
+    renderRows();
+    const again = document.querySelector('[data-act="' + act + '"][data-id="' + b.dataset.id + '"]');
+    if (again) again.focus();
+    compute();
+  });
+  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+    const r = newRow(b.dataset.add);
+    state.rows.push(r);
+    renderRows();
+    compute();
+    const el = document.getElementById('r' + r.id + '-label');
+    if (el) { el.focus(); el.select(); }
+  }));
+  document.querySelectorAll('[data-s]').forEach(el => el.addEventListener('input', () => { state[el.dataset.s] = el.value; schedule(); }));
+  $('#example').addEventListener('change', e => {
+    const k = e.target.value;
+    e.target.value = '';
+    if (EXAMPLES[k]) replaceState(EXAMPLES[k](), 'Loaded example: ' + e.target.querySelector('[value="' + k + '"]').textContent);
+  });
+  $('#newStack').addEventListener('click', () => {
+    const b = $('#newStack');
+    if (!newArmed) {
+      newArmed = setTimeout(() => { newArmed = 0; b.textContent = 'New stack'; }, 3000);
+      b.textContent = 'Click again to clear';
+      return;
+    }
+    clearTimeout(newArmed); newArmed = 0; b.textContent = 'New stack';
+    replaceState(blank(), 'Started a new stack');
+  });
+
+  /* ---------- import / export ---------- */
+  function copy(text, what) {
+    $('#ioText').value = text;
+    const fallback = () => { $('#ioText').focus(); $('#ioText').select(); toast(what + ' is in the box below. Copy it with ⌘C / Ctrl+C', true); };
+    try {
+      navigator.clipboard.writeText(text).then(() => toast(what + ' copied to clipboard', true), fallback);
+    } catch (e) { fallback(); }
+  }
+  $('#copyJson').addEventListener('click', () => {
+    const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
+    copy(JSON.stringify(out, null, 2), 'Stack JSON');
+  });
+  $('#copyCsv').addEventListener('click', () => copy(csv(), 'Results CSV'));
+  function loadJsonText(txt) {
+    try { replaceState(JSON.parse(txt), 'Stack loaded'); }
+    catch (e) { toast('Could not load: ' + e.message, true); }
+  }
+  $('#loadText').addEventListener('click', () => loadJsonText($('#ioText').value));
+  $('#fileIn').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { $('#ioText').value = rd.result; loadJsonText(rd.result); };
+    rd.readAsText(f);
+    e.target.value = '';
+  });
+  function csv() {
+    const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const [c, ref, h] = results;
+    const L = [];
+    L.push(['Stack', state.name].map(q).join(','));
+    L.push(['Result', state.result].map(q).join(','));
+    L.push(['Lower limit', state.lsl, 'Upper limit', state.usl].map(q).join(','));
+    L.push('');
+    L.push(['#', 'Contributor', 'Type', 'Direction', 'Mean @20C', 'Half range @20C', 'Variance share', 'Note'].map(q).join(','));
+    state.rows.forEach((r, i) => {
+      const m = ref.models[i];
+      L.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '-' : '+', m.err ? '' : m.m.toFixed(5), m.err ? '' : m.h.toFixed(5), m.err ? '' : (m.varShare * 100).toFixed(2) + '%', m.err || m.note || ''].map(q).join(','));
+    });
+    L.push('');
+    L.push(['Metric', 'Cold ' + c.T + 'C', 'Ref 20C', 'Hot ' + h.T + 'C'].map(q).join(','));
+    const row = (name, f) => L.push([name].concat(results.map(f)).map(q).join(','));
+    row('Nominal (mean of zones)', x => x.nominal.toFixed(5));
+    row('Worst case min', x => x.wcLo.toFixed(5));
+    row('Worst case max', x => x.wcHi.toFixed(5));
+    row('RSS min', x => x.rssLo.toFixed(5));
+    row('RSS max', x => x.rssHi.toFixed(5));
+    row('MC mean', x => x.mc.mean.toFixed(5));
+    row('MC std dev', x => x.mc.sd.toFixed(5));
+    row('MC 0.135%', x => x.mc.pLo.toFixed(5));
+    row('MC 99.865%', x => x.mc.pHi.toFixed(5));
+    row('MC below lower limit', x => x.mc.below + ' of ' + x.mc.n);
+    row('MC above upper limit', x => x.mc.above + ' of ' + x.mc.n);
+    row('Cpk', x => isFinite(x.cpk) ? x.cpk.toFixed(3) : '');
+    return L.join('\n');
+  }
+
+  /* ---------- compute ---------- */
+  function schedule() { clearTimeout(timer); timer = setTimeout(compute, 220); }
+  function compute() {
+    const t0 = performance.now();
+    results = E.analyze(state);
+    const ms = Math.round(performance.now() - t0);
+    $('#mcInfo').textContent = (+state.n).toLocaleString('en-US') + ' runs × 3 temperatures · ' + ms + ' ms';
+    updateFoots();
+    renderTable();
+    renderTabs();
+    renderHist();
+    renderPareto();
+    renderChain();
+    save();
+  }
+
+  function updateFoots() {
+    const [c, ref, h] = results;
+    state.rows.forEach((r, i) => {
+      const el = document.getElementById('foot-' + r.id);
+      if (!el) return;
+      const m = ref.models[i];
+      const card = el.closest('.row');
+      if (!m || m.err) {
+        el.innerHTML = '<span class="err">' + esc(m ? m.err : '') + '</span>';
+        card.classList.add('has-err');
+        return;
+      }
+      card.classList.remove('has-err');
+      const p = ['<b>' + (fmtS(m.m) || '0.0000') + ' ± ' + fmt(m.h) + '</b> mm'];
+      if (m.note) p.push(esc(m.note));
+      if (m.cmin != null) {
+        const range = x => um(x.cmin) + '…' + um(x.cmax) + ' µm';
+        let s = 'clearance ' + range(m) + ' at 20 °C';
+        const tc = c.models[i], th = h.models[i];
+        if (!tc.err && !th.err && (Math.abs(tc.cmin - m.cmin) > 5e-5 || Math.abs(th.cmin - m.cmin) > 5e-5)) s += ', ' + range(tc) + ' at ' + c.T + ' °C, ' + range(th) + ' at ' + h.T + ' °C';
+        if (m.cmin <= 0) s += ' · no float where clearance ≤ 0';
+        p.push(s);
+      } else {
+        const tc = c.models[i], th = h.models[i];
+        if (!tc.err && !th.err && (Math.abs(tc.m - m.m) > 5e-6 || Math.abs(th.m - m.m) > 5e-6)) p.push('thermal ' + (fmtS(tc.m - m.m) || '0') + ' at ' + c.T + ' °C, ' + (fmtS(th.m - m.m) || '0') + ' at ' + h.T + ' °C');
+      }
+      p.push(pct(m.varShare) + ' of variance');
+      el.innerHTML = p.join(' · ');
+    });
+  }
+
+  function status(x) {
+    const lo = x.lsl, hi = x.usl;
+    if (!isFinite(lo) && !isFinite(hi)) return ['none', 'No limits'];
+    const inside = (a, b) => (!isFinite(lo) || a >= lo - 1e-12) && (!isFinite(hi) || b <= hi + 1e-12);
+    if (inside(x.wcLo, x.wcHi)) return ['ok', 'Pass WC'];
+    if (inside(x.rssLo, x.rssHi)) return ['warn', 'RSS only'];
+    return ['bad', 'Fail'];
+  }
+
+  function renderTable() {
+    const cs = results;
+    const lo = cs[0].lsl, hi = cs[0].usl;
+    const cls = v => ((isFinite(lo) && v < lo - 1e-12) || (isFinite(hi) && v > hi + 1e-12)) ? ' class="bad"' : '';
+    const head = '<tr><th scope="col"><span class="sr">Metric</span></th>' + cs.map(x => '<th scope="col">' + (x.key === 'ref' ? '20 °C' : x.T + ' °C') + '</th>').join('') + '</tr>';
+    const tr = (label, f, sep) => '<tr' + (sep ? ' class="sep"' : '') + '><td>' + label + '</td>' + cs.map(f).join('') + '</tr>';
+    const v = (x, d) => '<td' + cls(x) + '>' + fmt(x, d) + '</td>';
+    $('#resCaption').textContent = (state.result || 'Result') + (isFinite(lo) || isFinite(hi) ? ' · limits ' + (isFinite(lo) ? fmt(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmt(hi, 3) : '—') + ' mm' : '');
+    $('#resTable').innerHTML = head +
+      tr('Status', x => { const s = status(x); return '<td><span class="pill ' + s[0] + '">' + s[1] + '</span></td>'; }) +
+      tr('Mean of zones', x => v(x.nominal), true) +
+      tr('Worst case min', x => v(x.wcLo), true) +
+      tr('Worst case max', x => v(x.wcHi)) +
+      tr('RSS min', x => v(x.rssLo), true) +
+      tr('RSS max', x => v(x.rssHi)) +
+      tr('MC mean', x => '<td>' + fmt(x.mc.mean) + '</td>', true) +
+      tr('MC σ', x => '<td>' + fmt(x.mc.sd) + '</td>') +
+      tr('MC −3σ (0.135%)', x => v(x.mc.pLo)) +
+      tr('MC +3σ (99.865%)', x => v(x.mc.pHi)) +
+      tr('Out of limits', x => { const n = x.mc.below + x.mc.above; return '<td' + (n ? ' class="bad"' : ' class="okv"') + '>' + ppm(n, x.mc.n) + '</td>'; }, true) +
+      tr('Cpk', x => '<td' + (isFinite(x.cpk) && x.cpk < 1.33 ? ' class="bad"' : '') + '>' + (isFinite(x.cpk) ? x.cpk.toFixed(2) : '—') + '</td>');
+  }
+
+  function renderTabs() {
+    $('#caseTabs').innerHTML = results.map(x => '<button type="button" data-case="' + x.key + '" aria-pressed="' + (x.key === activeCase) + '">' + (x.key === 'ref' ? '20 °C' : x.T + ' °C') + '</button>').join('');
+  }
+  $('#caseTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-case]');
+    if (!b) return;
+    activeCase = b.dataset.case;
+    renderTabs();
+    renderHist();
+  });
+
+  function niceStep(span, n) {
+    const raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+  }
+
+  function renderHist() {
+    const x = results.find(c => c.key === activeCase);
+    const svg = $('#hist');
+    const s = x.mc.samples;
+    if (!s || !s.length || !(x.mc.sd > 0)) {
+      svg.innerHTML = '<text x="240" y="125" text-anchor="middle" class="h-tick">Add contributors with a tolerance to see the distribution</text>';
+      return;
+    }
+    const W = 480, H = 250, ml = 10, mr = 10, mt = 26, axisY = 168;
+    let lo = Math.min(x.mc.qLo, x.wcLo), hi = Math.max(x.mc.qHi, x.wcHi);
+    if (isFinite(x.lsl)) lo = Math.min(lo, x.lsl);
+    if (isFinite(x.usl)) hi = Math.max(hi, x.usl);
+    const pad = (hi - lo) * 0.05 || 0.001;
+    lo -= pad; hi += pad;
+    const X = v => ml + (v - lo) / (hi - lo) * (W - ml - mr);
+    const B = 60, counts = new Array(B).fill(0), bw = (hi - lo) / B;
+    for (let i = 0; i < s.length; i++) { const b = Math.floor((s[i] - lo) / bw); if (b >= 0 && b < B) counts[b]++; }
+    const max = Math.max.apply(null, counts) || 1;
+    let g = '';
+    for (let b = 0; b < B; b++) {
+      if (!counts[b]) continue;
+      const c0 = lo + b * bw, c1 = c0 + bw, mid = (c0 + c1) / 2;
+      const out = (isFinite(x.lsl) && mid < x.lsl) || (isFinite(x.usl) && mid > x.usl);
+      const hgt = counts[b] / max * (axisY - mt);
+      g += '<rect class="h-bar' + (out ? ' out' : '') + '" x="' + (X(c0) + 0.5).toFixed(1) + '" y="' + (axisY - hgt).toFixed(1) + '" width="' + Math.max(0.5, X(c1) - X(c0) - 1).toFixed(1) + '" height="' + hgt.toFixed(1) + '"/>';
+    }
+    g += '<line class="h-axis" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + axisY + '" y2="' + axisY + '"/>';
+    const step = niceStep(hi - lo, 5), dec = Math.max(0, Math.min(5, -Math.floor(Math.log10(step) + 1e-9)));
+    for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-12; t += step) {
+      const px = X(t);
+      if (px < ml + 18 || px > W - mr - 18) continue;
+      g += '<line class="h-axis" x1="' + px.toFixed(1) + '" x2="' + px.toFixed(1) + '" y1="' + axisY + '" y2="' + (axisY + 4) + '"/>';
+      g += '<text class="h-tick" x="' + px.toFixed(1) + '" y="' + (axisY + 16) + '" text-anchor="middle">' + fmt(t, dec) + '</text>';
+    }
+    const mx = X(x.mc.mean);
+    g += '<line class="h-mean" x1="' + mx + '" x2="' + mx + '" y1="' + mt + '" y2="' + axisY + '"/>';
+    [['LSL', x.lsl, 'start', 4], ['USL', x.usl, 'end', -4]].forEach(([n, v, anchor, dx]) => {
+      if (!isFinite(v)) return;
+      const px = X(v).toFixed(1);
+      g += '<line class="h-spec" x1="' + px + '" x2="' + px + '" y1="' + (mt - 14) + '" y2="' + axisY + '"/>';
+      g += '<text class="h-spec-lab" x="' + (+px + dx) + '" y="' + (mt - 4) + '" text-anchor="' + anchor + '">' + n + ' ' + fmt(v, 3) + '</text>';
+    });
+    const bracket = (a, b, y, label, k) => {
+      const x1 = X(a), x2 = X(b);
+      return '<line class="h-br ' + k + '" x1="' + x1 + '" x2="' + x2 + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<line class="h-br ' + k + '" x1="' + x1 + '" x2="' + x1 + '" y1="' + (y - 4) + '" y2="' + (y + 4) + '"/>' +
+        '<line class="h-br ' + k + '" x1="' + x2 + '" x2="' + x2 + '" y1="' + (y - 4) + '" y2="' + (y + 4) + '"/>' +
+        '<text class="h-br-lab ' + k + '" x="' + ((x1 + x2) / 2) + '" y="' + (y - 6) + '" text-anchor="middle">' + label + '</text>';
+    };
+    g += bracket(x.rssLo, x.rssHi, 208, 'RSS ' + fmt(x.rssLo, 3) + ' … ' + fmt(x.rssHi, 3), 'rss');
+    g += bracket(x.wcLo, x.wcHi, 240, 'Worst case ' + fmt(x.wcLo, 3) + ' … ' + fmt(x.wcHi, 3), 'wc');
+    svg.innerHTML = g;
+  }
+
+  function renderPareto() {
+    const ref = results[1];
+    const items = state.rows.map((r, i) => ({ r, i, m: ref.models[i] })).filter(o => !o.m.err).sort((a, b) => b.m.varShare - a.m.varShare);
+    if (!items.length) { $('#pareto').innerHTML = '<p class="hint">No valid contributors yet.</p>'; return; }
+    $('#pareto').innerHTML = items.map(o =>
+      '<div class="par-row"><span class="par-name"><span class="mono">' + (o.i + 1) + '</span>' + esc(o.r.label || TYPE_NAME[o.r.type]) + '</span>' +
+      '<span class="par-num">' + pct(o.m.varShare) + ' · ' + pct(o.m.wcShare) + '</span>' +
+      '<div class="par-track"><div class="par-fill" style="width:' + (o.m.varShare * 100).toFixed(2) + '%"></div></div></div>'
+    ).join('');
+  }
+
+  function renderChain() {
+    const ref = results[1], svg = $('#chainSvg');
+    const n = state.rows.length;
+    const W = 680, labW = 250, pr = 20, rh = 24, top = 10;
+    const H = top + (n + 1) * rh + 16;
+    let cum = 0;
+    const segs = state.rows.map((r, i) => { const m = ref.models[i], a = cum; if (!m.err) cum += m.m; return { r, m, i, a, b: cum }; });
+    const total = cum;
+    let lo = 0, hi = 0;
+    segs.forEach(s => { lo = Math.min(lo, s.a, s.b); hi = Math.max(hi, s.a, s.b); });
+    if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+    const X = v => labW + 10 + (v - lo) / (hi - lo) * (W - labW - 10 - pr);
+    const trunc = (t, k) => t.length > k ? t.slice(0, k - 1) + '…' : t;
+    const arrow = (x1, x2, y, lineCls, headCls) => {
+      const dir = x2 >= x1 ? 1 : -1, len = Math.abs(x2 - x1), hl = Math.min(7, len * 0.6);
+      return '<line class="' + lineCls + '" x1="' + x1.toFixed(1) + '" x2="' + (x2 - dir * hl * 0.6).toFixed(1) + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<path class="' + headCls + '" d="M' + x2.toFixed(1) + ' ' + y + 'L' + (x2 - dir * hl).toFixed(1) + ' ' + (y - 4) + 'L' + (x2 - dir * hl).toFixed(1) + ' ' + (y + 4) + 'Z"/>';
+    };
+    let g = '<line class="ch-guide" x1="' + X(0) + '" x2="' + X(0) + '" y1="' + top + '" y2="' + (H - 8) + '"/>';
+    if (n) g += '<line class="ch-guide" x1="' + X(total) + '" x2="' + X(total) + '" y1="' + top + '" y2="' + (H - 8) + '"/>';
+    segs.forEach(s => {
+      const y = top + s.i * rh + rh / 2;
+      g += '<text class="ch-lab" x="0" y="' + (y + 4) + '">' + (s.i + 1) + '  ' + esc(trunc(s.r.label || TYPE_NAME[s.r.type], 27)) + '</text>';
+      if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">check input</text>'; return; }
+      g += '<text class="ch-val" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (Math.abs(s.m.m) < 5e-5 ? '±' + fmt(s.m.h, 3) : fmtS(s.m.m, 3)) + '</text>';
+      if (Math.abs(X(s.b) - X(s.a)) < 3) g += '<circle class="ch-dot" cx="' + X(s.a).toFixed(1) + '" cy="' + y + '" r="4"/>';
+      else g += arrow(X(s.a), X(s.b), y, 'ch-line', 'ch-head');
+    });
+    const y = top + n * rh + rh / 2 + 4;
+    g += '<text class="ch-res-lab" x="0" y="' + (y + 4) + '">Result</text>';
+    g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmt(total, 4) + '</text>';
+    if (Math.abs(X(total) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0) + '" cy="' + y + '" r="4"/>';
+    else g += arrow(X(0), X(total), y, 'ch-line ch-res', 'ch-res-head');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = g;
+  }
+
+  state = load();
+  renderAll();
+})();
+</script>
+</body>
+</html>
