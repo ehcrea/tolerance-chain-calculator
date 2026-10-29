@@ -209,6 +209,53 @@ details.panel[open] > summary { margin-bottom: 12px; }
 #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 8px 10px 8px 14px; display: flex; gap: 12px; align-items: center; font-size: 13px; z-index: 20; box-shadow: 0 6px 24px rgba(0,0,0,0.2); max-width: calc(100% - 32px); }
 #toast button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 10px; cursor: pointer; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* report: hidden on screen, the only thing printed */
+.report { display: none; }
+@page { size: A4; margin: 13mm 12mm 14mm; }
+@media print {
+  .app, #toast { display: none !important; }
+  :root { padding: 0; }
+  body { background: #fff; }
+  .report { display: block; }
+}
+.report {
+  --bg: #ffffff; --panel: #ffffff; --field: #ffffff; --ink: #121a19; --muted: #56625f; --line: #d4dad8; --line-strong: #9eaaa6;
+  --accent: #0b6670; --accent-ink: #ffffff; --accent-soft: #dcecea; --ok: #1c7642; --ok-soft: #dbeee1; --warn: #8a5300; --warn-soft: #f5e7cc;
+  --bad: #ae2a20; --bad-soft: #f6dcd8; --heat: #c4511a; --cool: #aab6b2;
+  color-scheme: light; background: #fff; color: var(--ink); font-size: 9.5pt; line-height: 1.4;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.rp-head { display: flex; justify-content: space-between; gap: 8mm; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 4mm; margin-bottom: 5mm; }
+.rp-kicker { font-family: var(--font-display); font-size: 9pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.rp-head h1 { font-size: 20pt; margin: 1mm 0; }
+.rp-head p { margin: 0; color: var(--muted); max-width: 95mm; }
+.rp-meta { border-collapse: collapse; font-size: 8.5pt; min-width: 70mm; }
+.rp-meta th { text-align: left; font-weight: 500; color: var(--muted); padding: 0.6mm 4mm 0.6mm 0; white-space: nowrap; }
+.rp-meta td { padding: 0.6mm 0; font-family: var(--font-mono); text-align: left; border: 0; }
+.rp-sec { margin-bottom: 6mm; }
+.rp-sec h2 { font-size: 10pt; color: var(--ink); letter-spacing: 0.06em; border-bottom: 1px solid var(--line-strong); padding-bottom: 1mm; margin-bottom: 3mm; }
+.rp-keep { break-inside: avoid; }
+.rp-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+.rp-case { border: 1px solid var(--line); border-radius: 2mm; padding: 2.5mm 3mm; display: flex; flex-direction: column; gap: 1mm; }
+.rp-case b { font-family: var(--font-mono); font-weight: 500; }
+.rp-case span { color: var(--muted); font-size: 8.5pt; }
+.rp-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+.rp-table th { text-align: left; font-family: var(--font-display); font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line-strong); padding: 1mm 1.5mm; }
+.rp-table td { border-bottom: 1px solid var(--line); padding: 1mm 1.5mm; vertical-align: top; font-family: var(--font-body); }
+.rp-table td.n, .rp-table th.n { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
+.rp-table tr { break-inside: avoid; }
+.report .res-table { font-size: 8.5pt; }
+.report svg { display: block; width: 100%; height: auto; }
+.rp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 6mm; }
+.rp-grid h3 { font-size: 9pt; margin-bottom: 1mm; color: var(--muted); }
+.report .ch-row .ch-hit { fill: transparent; stroke: none; }
+.report .ch-legend { font-size: 8pt; }
+.report .par { gap: 2mm; }
+.report .par-row { font-size: 8.5pt; }
+.report .notes { max-width: none; font-size: 8.5pt; columns: 2; column-gap: 8mm; }
+.report .notes dt { break-after: avoid; }
+.report .notes dd { break-inside: avoid; }
+.rp-foot { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid var(--line); font-size: 8pt; color: var(--muted); display: flex; justify-content: space-between; gap: 4mm; }
 @media (prefers-reduced-motion: no-preference) { .par-fill { transition: width 0.25s ease; } }
 </style>
 </head>
@@ -238,6 +285,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       <span class="tb-sep" aria-hidden="true"></span>
       <button class="btn" id="dlCsv" type="button" title="Download results as CSV">CSV</button>
       <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook">Excel</button>
+      <button class="btn primary" id="pdfReport" type="button" title="Open a print-ready report; choose Save as PDF in the print dialog">PDF report</button>
     </div>
   </header>
 
@@ -254,6 +302,8 @@ details.panel[open] > summary { margin-bottom: 12px; }
           <label class="fld" for="st-n"><span class="lab">Monte Carlo runs</span>
             <select id="st-n" data-s="n"><option value="20000">20 000</option><option value="50000">50 000</option><option value="100000">100 000</option><option value="250000">250 000</option></select>
           </label>
+          <label class="fld" for="st-author"><span class="lab">Author</span><input id="st-author" data-s="author" autocomplete="off" placeholder="for the report"></label>
+          <label class="fld" for="st-rev"><span class="lab">Revision</span><input id="st-rev" data-s="rev" autocomplete="off" placeholder="A"></label>
           <label class="fld res" for="st-result"><span class="lab">What the result measures</span><input id="st-result" data-s="result" autocomplete="off" placeholder="e.g. Axial gap between cover and bearing"></label>
         </div>
       </div>
@@ -294,7 +344,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
 
       <details class="panel">
         <summary>Method notes</summary>
-        <dl class="notes">
+        <dl class="notes" id="methodNotes">
           <dt>Sign convention</dt>
           <dd>Each contributor has a direction (+ adds to the result, − subtracts) and an optional factor, e.g. a lever ratio. Worst case and RSS use each contributor's mean (centre of its zone) and half range <code>h</code>.</dd>
           <dt>Worst case and RSS</dt>
@@ -330,6 +380,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     </aside>
   </main>
 </div>
+<section id="report" class="report" aria-label="Printable report"></section>
 <div id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
 
 <script src="engine.js" charset="utf-8"></script>
@@ -493,6 +544,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'),
       units: o.units === 'imp' ? 'imp' : (o.units === 'si' ? 'si' : (state && state.units) || 'si'),
       chain: o.chain === 'scale' ? 'scale' : 'equal',
+      author: o.author ?? '', rev: o.rev ?? '',
       rows
     };
   }
@@ -908,15 +960,22 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return ['bad', 'Fail'];
   }
 
+  function limitsTxt() {
+    const lo = results[0].lsl, hi = results[0].usl;
+    return isFinite(lo) || isFinite(hi) ? (isFinite(lo) ? fmtL(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmtL(hi, 3) : '—') + ' ' + LU() : 'none';
+  }
   function renderTable() {
+    $('#resCaption').textContent = (state.result || 'Result') + (limitsTxt() !== 'none' ? ' · limits ' + limitsTxt() : '');
+    $('#resTable').innerHTML = resultTableHtml();
+  }
+  function resultTableHtml() {
     const cs = results;
     const lo = cs[0].lsl, hi = cs[0].usl;
     const cls = v => ((isFinite(lo) && v < lo - 1e-12) || (isFinite(hi) && v > hi + 1e-12)) ? ' class="bad"' : '';
     const head = '<tr><th scope="col"><span class="sr">Metric, </span>' + LU() + '</th>' + cs.map(x => '<th scope="col">' + tempTxt(x.T) + '</th>').join('') + '</tr>';
     const tr = (label, f, sep) => '<tr' + (sep ? ' class="sep"' : '') + '><td>' + label + '</td>' + cs.map(f).join('') + '</tr>';
     const v = (x, d) => '<td' + cls(x) + '>' + fmtL(x, d) + '</td>';
-    $('#resCaption').textContent = (state.result || 'Result') + (isFinite(lo) || isFinite(hi) ? ' · limits ' + (isFinite(lo) ? fmtL(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmtL(hi, 3) : '—') + ' ' + LU() : '');
-    $('#resTable').innerHTML = head +
+    return head +
       tr('Status', x => { const s = status(x); return '<td><span class="pill ' + s[0] + '">' + s[1] + '</span></td>'; }) +
       tr('Mean of zones', x => v(x.nominal), true) +
       tr('Worst case min', x => v(x.wcLo), true) +
@@ -948,13 +1007,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
   }
 
   function renderHist() {
-    const x = results.find(c => c.key === activeCase);
-    const svg = $('#hist');
+    $('#hist').innerHTML = histMarkup(results.find(c => c.key === activeCase));
+  }
+  function histMarkup(x) {
     const s = x.mc.samples;
-    if (!s || !s.length || !(x.mc.sd > 0)) {
-      svg.innerHTML = '<text x="240" y="125" text-anchor="middle" class="h-tick">Add contributors with a tolerance to see the distribution</text>';
-      return;
-    }
+    if (!s || !s.length || !(x.mc.sd > 0)) return '<text x="240" y="125" text-anchor="middle" class="h-tick">Add contributors with a tolerance to see the distribution</text>';
     const W = 480, H = 250, ml = 10, mr = 10, mt = 26, axisY = 168;
     let lo = Math.min(x.mc.qLo, x.wcLo), hi = Math.max(x.mc.qHi, x.wcHi);
     if (isFinite(x.lsl)) lo = Math.min(lo, x.lsl);
@@ -1000,14 +1057,15 @@ details.panel[open] > summary { margin-bottom: 12px; }
     };
     g += bracket(x.rssLo, x.rssHi, 208, 'RSS ' + fmtL(x.rssLo, 3) + ' … ' + fmtL(x.rssHi, 3), 'rss');
     g += bracket(x.wcLo, x.wcHi, 240, 'Worst case ' + fmtL(x.wcLo, 3) + ' … ' + fmtL(x.wcHi, 3) + ' ' + LU(), 'wc');
-    svg.innerHTML = g;
+    return g;
   }
 
-  function renderPareto() {
+  function renderPareto() { $('#pareto').innerHTML = paretoHtml(); }
+  function paretoHtml() {
     const ref = results[1];
     const items = state.rows.map((r, i) => ({ r, i, m: ref.models[i] })).filter(o => !o.m.err).sort((a, b) => b.m.varShare - a.m.varShare);
-    if (!items.length) { $('#pareto').innerHTML = '<p class="hint">No valid contributors yet.</p>'; return; }
-    $('#pareto').innerHTML = items.map(o =>
+    if (!items.length) return '<p class="hint">No valid contributors yet.</p>';
+    return items.map(o =>
       '<div class="par-row"><span class="par-name"><span class="mono">' + (o.i + 1) + '</span>' + esc(o.r.label || TYPE_NAME[o.r.type]) + '</span>' +
       '<span class="par-num">' + pct(o.m.varShare) + ' · ' + pct(o.m.wcShare) + '</span>' +
       '<div class="par-track"><div class="par-fill" style="width:' + (o.m.varShare * 100).toFixed(2) + '%"></div></div></div>'
@@ -1047,7 +1105,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
         '<path d="M' + xb.toFixed(1) + ' ' + y + 'L' + (xb - dir * hl).toFixed(1) + ' ' + (y - 4.5) + 'L' + (xb - dir * hl).toFixed(1) + ' ' + (y + 4.5) + 'Z" style="fill:' + col + '"/>';
     };
     let g = '<line class="ch-guide" x1="' + X(0).toFixed(1) + '" x2="' + X(0).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
-    if (n) g += '<line class="ch-guide" x1="' + X(end).toFixed(1) + '" x2="' + X(end).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
+    if (n && !equal) g += '<line class="ch-guide" x1="' + X(end).toFixed(1) + '" x2="' + X(end).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
     segs.forEach(s => {
       const y = top + s.i * rh + rh / 2, name = s.r.label || TYPE_NAME[s.r.type];
       g += '<g class="ch-row" data-id="' + s.r.id + '" tabindex="0" role="button" aria-label="' + esc(name) + ': go to contributor">';
@@ -1065,8 +1123,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const y = top + n * rh + rh / 2 + 4;
     g += '<text class="ch-res-lab" x="4" y="' + (y + 4) + '">Result' + (equal ? ' (schematic)' : '') + '</text>';
     g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtL(ref.nominal, 4) + ' ' + LU() + '</text>';
-    if (Math.abs(X(end) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0).toFixed(1) + '" cy="' + y + '" r="4" style="stroke:var(--accent)"/>';
-    else g += arrow(X(0), X(end), y, 'var(--accent)', 3);
+    // true scale closes the loop; equal steps only shows the result's sign, one step long
+    const rEnd = equal ? (Math.abs(ref.nominal) < 5e-5 ? 0 : Math.sign(ref.nominal)) : end;
+    if (Math.abs(X(rEnd) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0).toFixed(1) + '" cy="' + y + '" r="4" style="stroke:var(--accent)"/>';
+    else g += arrow(X(0), X(rEnd), y, 'var(--accent)', 3);
     return { vb: '0 0 ' + W + ' ' + H, g };
   }
 
@@ -1137,6 +1197,55 @@ details.panel[open] > summary { margin-bottom: 12px; }
     renderChain();
     save();
   });
+
+  /* ---------- PDF report: a print-styled page; the browser's print dialog saves it as PDF ---------- */
+  function renderReport() {
+    if (!results) compute();
+    const [c, ref, h] = results, u = LU();
+    const meta = [
+      ['Date', localStamp(true)], ['Revision', state.rev || '—'], ['Author', state.author || '—'],
+      ['Limits', limitsTxt()], ['Ambient', tempTxt(c.T) + ' to ' + tempTxt(h.T) + ', reference ' + tempTxt(20)],
+      ['Monte Carlo', ref.mc.n.toLocaleString('en-US') + ' runs per temperature'], ['Units', imp() ? 'inch, °F' : 'mm, °C']
+    ];
+    const summary = results.map(x => {
+      const st = status(x);
+      return '<div class="rp-case"><span>Ambient ' + tempTxt(x.T) + '</span><div><span class="pill ' + st[0] + '">' + st[1] + '</span></div>' +
+        '<span>Worst case <b>' + fmtL(x.wcLo) + ' … ' + fmtL(x.wcHi) + '</b></span>' +
+        '<span>RSS <b>' + fmtL(x.rssLo) + ' … ' + fmtL(x.rssHi) + '</b></span>' +
+        '<span>Out of limits <b>' + ppm(x.mc.below + x.mc.above, x.mc.n) + '</b> · Cpk <b>' + (isFinite(x.cpk) ? x.cpk.toFixed(2) : '—') + '</b></span></div>';
+    }).join('');
+    const rows = state.rows.map((r, i) => {
+      const m = ref.models[i];
+      return '<tr><td class="n">' + (i + 1) + '</td><td>' + esc(r.label || TYPE_NAME[r.type]) + '</td><td>' + TYPE_NAME[r.type] + '</td>' +
+        '<td class="n">' + (+r.dir < 0 ? '−' : '+') + (E.num(r.k, 1) !== 1 ? ' ×' + E.num(r.k, 1) : '') + '</td>' +
+        '<td>' + (m.err ? '<span style="color:var(--bad)">' + esc(m.err) + '</span>' : esc(specTxt(r, m))) + '</td>' +
+        '<td>' + esc(materialTxt(r)) + '</td><td>' + esc(DIST_NAME(r.dist)) + '</td>' +
+        '<td class="n">' + (m.err ? '' : fmtSL(m.m) || fmtL(0)) + '</td><td class="n">' + (m.err ? '' : '±' + fmtL(m.h)) + '</td>' +
+        '<td class="n">' + (m.err ? '' : pct(m.varShare)) + '</td></tr>';
+    }).join('');
+    const ch = chainMarkup(state.chain === 'scale' ? 'scale' : 'equal');
+    const hist = x => '<div class="rp-keep"><h3>Ambient ' + tempTxt(x.T) + '</h3><svg viewBox="0 0 480 250" role="img" aria-label="Histogram at ' + tempTxt(x.T) + '">' + histMarkup(x) + '</svg></div>';
+    $('#report').innerHTML =
+      '<header class="rp-head"><div><div class="rp-kicker">Tolerance stack-up report</div><h1>' + esc(state.name || 'Untitled stack') + '</h1><p>' + esc(state.result || '') + '</p></div>' +
+      '<table class="rp-meta">' + meta.map(([k, v]) => '<tr><th>' + k + '</th><td>' + esc(v) + '</td></tr>').join('') + '</table></header>' +
+      '<section class="rp-sec rp-keep"><h2>Summary</h2><div class="rp-summary">' + summary + '</div></section>' +
+      '<section class="rp-sec"><h2>1 · Contributors</h2><table class="rp-table"><thead><tr><th class="n">#</th><th>Contributor</th><th>Type</th><th class="n">Dir.</th><th>Specification</th><th>Material</th><th>Distribution</th>' +
+        '<th class="n">Mean (' + u + ')</th><th class="n">Range (' + u + ')</th><th class="n">Var.</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p class="hint">Mean and range at ' + tempTxt(20) + '. Var. is the share of result variance from Monte Carlo.</p></section>' +
+      '<section class="rp-sec rp-keep"><h2>2 · Dimension chain at ' + tempTxt(20) + (state.chain === 'scale' ? ', true scale' : ', equal steps') + '</h2><svg viewBox="' + ch.vb + '" role="img" aria-label="Dimension chain">' + ch.g + '</svg>' +
+        '<div class="ch-legend"><span>Arrows right add, left subtract · band = ± tolerance · circle = zero nominal</span><span>Colour: share of variance</span><span>low</span><span class="ch-ramp"></span><span>high</span></div></section>' +
+      '<section class="rp-sec rp-keep"><h2>3 · Results</h2><table class="res-table">' + resultTableHtml() + '</table></section>' +
+      '<section class="rp-sec"><h2>4 · Variation distribution and contribution</h2><div class="rp-grid">' + hist(c) + hist(ref) + hist(h) +
+        '<div class="rp-keep"><h3>Contribution at ' + tempTxt(20) + ' · variance · worst case</h3><div class="par">' + paretoHtml() + '</div></div></div></section>' +
+      '<section class="rp-sec"><h2>5 · Method</h2><dl class="notes">' + $('#methodNotes').innerHTML + '</dl></section>' +
+      '<footer class="rp-foot"><span>Tolerance Chain Calculator · ehcrea.github.io/tolerance-chain-calculator</span><span>' + esc(state.name || '') + (state.rev ? ' · rev ' + esc(state.rev) : '') + ' · ' + localStamp() + '</span></footer>';
+  }
+  $('#pdfReport').addEventListener('click', () => {
+    renderReport();
+    window.print();
+  });
+  // also covers ⌘P / Ctrl+P
+  window.addEventListener('beforeprint', renderReport);
 
   state = load();
   renderAll();
