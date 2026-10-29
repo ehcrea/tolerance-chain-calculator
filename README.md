@@ -15,6 +15,7 @@ A free, browser-based 1D tolerance stack-up calculator for mechanical and precis
 
 - **SI or imperial units**: switch between mm/°C and inch/°F at any time. Calculations and saved files always stay in mm and °C, so a stack opens the same in either mode; ISO 286 and ISO 2768 values are looked up from the metric size and shown converted
 
+- **Chain diagram**: arrows with a ± tolerance band at each tip, coloured by share of result variance; hover for details, click to jump to the contributor; switch between equal steps and true scale
 - **Exports**: CSV and Excel (.xlsx) downloads with three tables: contributors, results by temperature and Monte Carlo histogram data, in the unit currently selected
 
 Stacks are saved in the browser and can be saved and loaded as .json files.

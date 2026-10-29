@@ -29,6 +29,8 @@
   --warn-soft: #f5e7cc;
   --bad: #ae2a20;
   --bad-soft: #f6dcd8;
+  --heat: #c4511a;
+  --cool: #aab6b2;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -38,14 +40,14 @@
   :root:not([data-theme="light"]) {
     --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
     --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
-    --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a;
+    --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a; --heat: #f08a4b; --cool: #4a5a57;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
   --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
-  --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a;
+  --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a; --heat: #f08a4b; --cool: #4a5a57;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -131,16 +133,26 @@ select.btn { padding-right: 8px; }
 
 /* chain diagram */
 .scrollx { overflow-x: auto; }
+.chain-wrap { position: relative; }
 #chainSvg { display: block; width: 100%; min-width: 560px; height: auto; }
 .ch-lab { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
 .ch-val { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
-.ch-line { stroke: var(--ink); stroke-width: 1.6; fill: none; }
-.ch-head { fill: var(--ink); }
-.ch-res { stroke: var(--accent); stroke-width: 3; }
-.ch-res-head { fill: var(--accent); }
 .ch-res-lab { fill: var(--accent); font-family: var(--font-display); font-weight: 600; font-size: 12.5px; }
 .ch-guide { stroke: var(--line-strong); stroke-dasharray: 3 3; stroke-width: 1; }
-.ch-dot { fill: var(--panel); stroke: var(--ink); stroke-width: 1.4; }
+.ch-dot { fill: var(--panel); stroke-width: 1.8; }
+.ch-band { fill-opacity: 0.25; stroke-width: 1; }
+.ch-hit { fill: transparent; }
+.ch-row { cursor: pointer; outline: none; }
+.ch-row:hover .ch-hit, .ch-row:focus-visible .ch-hit { fill: var(--accent-soft); }
+.ch-row:focus-visible .ch-hit { stroke: var(--accent); stroke-width: 1.5; }
+.ch-legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.ch-ramp { width: 90px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--cool), var(--heat)); }
+#chainTip { position: absolute; z-index: 5; max-width: 300px; background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 8px 10px; font-size: 12px; line-height: 1.45; display: flex; flex-direction: column; gap: 2px; pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+#chainTip .mono { font-family: var(--font-mono); }
+#chainTip .err { color: var(--bad-soft); }
+@keyframes flash { from { box-shadow: 0 0 0 3px var(--heat); } to { box-shadow: 0 0 0 3px transparent; } }
+.row.flash { animation: flash 1.4s ease-out; }
+@media (prefers-reduced-motion: reduce) { .row.flash { animation: none; outline: 3px solid var(--heat); } }
 .ch-err { fill: var(--bad); font-family: var(--font-body); font-size: 11px; }
 
 /* results */
@@ -247,8 +259,14 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>Chain at <span data-ref-temp>20 °C</span></h2><span class="hint">Arrows to the right add, to the left subtract. Circles are zero-nominal contributors.</span></div>
-        <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram"></svg></div>
+        <div class="panel-head"><h2>Chain at <span data-ref-temp>20 °C</span></h2>
+          <div class="tabs" id="chainMode" role="group" aria-label="Arrow lengths"><button type="button" data-chain="equal" aria-pressed="true">Equal steps</button><button type="button" data-chain="scale" aria-pressed="false">True scale</button></div>
+        </div>
+        <div class="chain-wrap">
+          <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram. Select a row to go to its contributor."></svg></div>
+          <div id="chainTip" role="tooltip" hidden></div>
+        </div>
+        <div class="ch-legend"><span>Arrows right add, left subtract · band = ± tolerance · circle = zero nominal · click a row to edit</span><span>Colour: share of variance</span><span>low</span><span class="ch-ramp" aria-hidden="true"></span><span>high</span></div>
       </div>
 
       <div class="rows-head"><h2>Contributors</h2><span class="hint mono">result = Σ direction × factor × value</span></div>
@@ -474,6 +492,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return {
       name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'),
       units: o.units === 'imp' ? 'imp' : (o.units === 'si' ? 'si' : (state && state.units) || 'si'),
+      chain: o.chain === 'scale' ? 'scale' : 'equal',
       rows
     };
   }
@@ -995,42 +1014,129 @@ details.panel[open] > summary { margin-bottom: 12px; }
     ).join('');
   }
 
-  function renderChain() {
-    const ref = results[1], svg = $('#chainSvg');
+  // Chain diagram markup. mode 'scale': arrows to true length; 'equal': one equal step per
+  // contributor so small gaps stay readable. Colour encodes the share of result variance.
+  function chainMarkup(mode) {
+    const ref = results[1];
     const n = state.rows.length;
-    const W = 680, labW = 250, pr = 20, rh = 24, top = 10;
-    const H = top + (n + 1) * rh + 16;
-    let cum = 0;
-    const segs = state.rows.map((r, i) => { const m = ref.models[i], a = cum; if (!m.err) cum += m.m; return { r, m, i, a, b: cum }; });
-    const total = cum;
+    const W = 700, labW = 250, pr = 30, rh = 26, top = 8;
+    const H = top + (n + 1) * rh + 14;
+    const equal = mode !== 'scale';
+    let cum = 0, maxH = 0;
+    const segs = state.rows.map((r, i) => {
+      const m = ref.models[i], a = cum;
+      if (!m.err) {
+        cum += equal ? (Math.abs(m.m) < 5e-5 ? 0 : Math.sign(m.m)) : m.m;
+        maxH = Math.max(maxH, m.h);
+      }
+      return { r, m, i, a, b: cum };
+    });
+    const end = cum;
     let lo = 0, hi = 0;
     segs.forEach(s => { lo = Math.min(lo, s.a, s.b); hi = Math.max(hi, s.a, s.b); });
     if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
-    const X = v => labW + 10 + (v - lo) / (hi - lo) * (W - labW - 10 - pr);
-    const trunc = (t, k) => t.length > k ? t.slice(0, k - 1) + '…' : t;
-    const arrow = (x1, x2, y, lineCls, headCls) => {
-      const dir = x2 >= x1 ? 1 : -1, len = Math.abs(x2 - x1), hl = Math.min(7, len * 0.6);
-      return '<line class="' + lineCls + '" x1="' + x1.toFixed(1) + '" x2="' + (x2 - dir * hl * 0.6).toFixed(1) + '" y1="' + y + '" y2="' + y + '"/>' +
-        '<path class="' + headCls + '" d="M' + x2.toFixed(1) + ' ' + y + 'L' + (x2 - dir * hl).toFixed(1) + ' ' + (y - 4) + 'L' + (x2 - dir * hl).toFixed(1) + ' ' + (y + 4) + 'Z"/>';
+    const x0 = labW + 18, x1 = W - pr;
+    const X = v => x0 + (v - lo) / (hi - lo) * (x1 - x0);
+    // half width of the tolerance band, px
+    const band = h => Math.max(1.5, equal ? (maxH ? h / maxH * 22 : 0) : h / (hi - lo) * (x1 - x0));
+    const heat = sh => 'color-mix(in oklab, var(--heat) ' + Math.round(Math.min(1, Math.sqrt(sh / 0.4)) * 100) + '%, var(--cool))';
+    const trunc = (t, k) => (t.length > k ? t.slice(0, k - 1) + '…' : t);
+    const arrow = (xa, xb, y, col, w) => {
+      const dir = xb >= xa ? 1 : -1, len = Math.abs(xb - xa), hl = Math.min(8, len * 0.6);
+      return '<line x1="' + xa.toFixed(1) + '" x2="' + (xb - dir * hl * 0.6).toFixed(1) + '" y1="' + y + '" y2="' + y + '" style="stroke:' + col + ';stroke-width:' + w + '"/>' +
+        '<path d="M' + xb.toFixed(1) + ' ' + y + 'L' + (xb - dir * hl).toFixed(1) + ' ' + (y - 4.5) + 'L' + (xb - dir * hl).toFixed(1) + ' ' + (y + 4.5) + 'Z" style="fill:' + col + '"/>';
     };
-    let g = '<line class="ch-guide" x1="' + X(0) + '" x2="' + X(0) + '" y1="' + top + '" y2="' + (H - 8) + '"/>';
-    if (n) g += '<line class="ch-guide" x1="' + X(total) + '" x2="' + X(total) + '" y1="' + top + '" y2="' + (H - 8) + '"/>';
+    let g = '<line class="ch-guide" x1="' + X(0).toFixed(1) + '" x2="' + X(0).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
+    if (n) g += '<line class="ch-guide" x1="' + X(end).toFixed(1) + '" x2="' + X(end).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
     segs.forEach(s => {
-      const y = top + s.i * rh + rh / 2;
-      g += '<text class="ch-lab" x="0" y="' + (y + 4) + '">' + (s.i + 1) + '  ' + esc(trunc(s.r.label || TYPE_NAME[s.r.type], 27)) + '</text>';
-      if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">check input</text>'; return; }
+      const y = top + s.i * rh + rh / 2, name = s.r.label || TYPE_NAME[s.r.type];
+      g += '<g class="ch-row" data-id="' + s.r.id + '" tabindex="0" role="button" aria-label="' + esc(name) + ': go to contributor">';
+      g += '<rect class="ch-hit" x="0" y="' + (y - rh / 2) + '" width="' + W + '" height="' + rh + '" rx="3"/>';
+      g += '<text class="ch-lab" x="4" y="' + (y + 4) + '">' + (s.i + 1) + '  ' + esc(trunc(name, 27)) + '</text>';
+      if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">check input</text></g>'; return; }
       g += '<text class="ch-val" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (Math.abs(s.m.m) < 5e-5 ? '±' + fmtL(s.m.h, 3) : fmtSL(s.m.m, 3)) + '</text>';
-      if (Math.abs(X(s.b) - X(s.a)) < 3) g += '<circle class="ch-dot" cx="' + X(s.a).toFixed(1) + '" cy="' + y + '" r="4"/>';
-      else g += arrow(X(s.a), X(s.b), y, 'ch-line', 'ch-head');
+      const col = heat(s.m.varShare), xa = X(s.a), xb = X(s.b), bw = band(s.m.h);
+      const tip = Math.abs(xb - xa) < 3 ? xa : xb;
+      g += '<rect class="ch-band" x="' + (tip - bw).toFixed(1) + '" y="' + (y - 6) + '" width="' + (2 * bw).toFixed(1) + '" height="12" style="fill:' + col + ';stroke:' + col + '"/>';
+      if (Math.abs(xb - xa) < 3) g += '<circle class="ch-dot" cx="' + xa.toFixed(1) + '" cy="' + y + '" r="4" style="stroke:' + col + '"/>';
+      else g += arrow(xa, xb, y, col, 2);
+      g += '</g>';
     });
     const y = top + n * rh + rh / 2 + 4;
-    g += '<text class="ch-res-lab" x="0" y="' + (y + 4) + '">Result</text>';
-    g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtL(total, 4) + ' ' + LU() + '</text>';
-    if (Math.abs(X(total) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0) + '" cy="' + y + '" r="4"/>';
-    else g += arrow(X(0), X(total), y, 'ch-line ch-res', 'ch-res-head');
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    svg.innerHTML = g;
+    g += '<text class="ch-res-lab" x="4" y="' + (y + 4) + '">Result' + (equal ? ' (schematic)' : '') + '</text>';
+    g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtL(ref.nominal, 4) + ' ' + LU() + '</text>';
+    if (Math.abs(X(end) - X(0)) < 3) g += '<circle class="ch-dot" cx="' + X(0).toFixed(1) + '" cy="' + y + '" r="4" style="stroke:var(--accent)"/>';
+    else g += arrow(X(0), X(end), y, 'var(--accent)', 3);
+    return { vb: '0 0 ' + W + ' ' + H, g };
   }
+
+  function renderChain() {
+    const svg = $('#chainSvg'), mode = state.chain === 'scale' ? 'scale' : 'equal';
+    const c = chainMarkup(mode);
+    svg.setAttribute('viewBox', c.vb);
+    svg.innerHTML = c.g;
+    document.querySelectorAll('[data-chain]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.chain === mode)));
+  }
+
+  // hover details, click to jump to the card
+  function chainTip(id) {
+    const i = state.rows.findIndex(r => r.id === +id);
+    if (i < 0) return '';
+    const r = state.rows[i], m = results[1].models[i];
+    if (m.err) return '<b>' + esc(r.label) + '</b><span class="err">' + esc(m.err) + '</span>';
+    return '<b>' + (i + 1) + ' · ' + esc(r.label || TYPE_NAME[r.type]) + '</b>' +
+      '<span>' + TYPE_NAME[r.type] + ' · ' + (+r.dir < 0 ? 'subtracts' : 'adds') + (E.num(r.k, 1) !== 1 ? ' × ' + E.num(r.k, 1) : '') + '</span>' +
+      (specTxt(r, m) ? '<span>' + esc(specTxt(r, m)) + '</span>' : '') +
+      '<span class="mono">' + (fmtSL(m.m) || fmtL(0)) + ' ± ' + fmtL(m.h) + ' ' + LU() + '</span>' +
+      '<span>' + pct(m.varShare) + ' of variance · ' + pct(m.wcShare) + ' of worst case</span>';
+  }
+  const chainSvgEl = $('#chainSvg'), tipEl = $('#chainTip');
+  function showTip(g, cx, cy) {
+    tipEl.innerHTML = chainTip(g.dataset.id);
+    tipEl.hidden = false;
+    const wrap = tipEl.parentElement.getBoundingClientRect();
+    let x = cx - wrap.left + 14, y = cy - wrap.top + 14;
+    if (x + tipEl.offsetWidth > wrap.width) x = Math.max(0, cx - wrap.left - tipEl.offsetWidth - 14);
+    tipEl.style.left = x + 'px';
+    tipEl.style.top = y + 'px';
+  }
+  chainSvgEl.addEventListener('mousemove', e => {
+    const g = e.target.closest('.ch-row');
+    if (!g) { tipEl.hidden = true; return; }
+    showTip(g, e.clientX, e.clientY);
+  });
+  chainSvgEl.addEventListener('mouseleave', () => { tipEl.hidden = true; });
+  chainSvgEl.addEventListener('focusin', e => {
+    const g = e.target.closest('.ch-row');
+    if (!g) return;
+    const b = g.getBoundingClientRect();
+    showTip(g, b.left + 260, b.top + b.height / 2);
+  });
+  chainSvgEl.addEventListener('focusout', () => { tipEl.hidden = true; });
+  function goToCard(id) {
+    const card = document.querySelector('.row[data-row="' + id + '"]');
+    if (!card) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    card.classList.remove('flash');
+    void card.offsetWidth;
+    card.classList.add('flash');
+    const name = card.querySelector('.name');
+    if (name) name.focus({ preventScroll: true });
+  }
+  chainSvgEl.addEventListener('click', e => { const g = e.target.closest('.ch-row'); if (g) goToCard(g.dataset.id); });
+  chainSvgEl.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const g = e.target.closest('.ch-row');
+    if (g) { e.preventDefault(); goToCard(g.dataset.id); }
+  });
+  $('#chainMode').addEventListener('click', e => {
+    const b = e.target.closest('[data-chain]');
+    if (!b) return;
+    state.chain = b.dataset.chain;
+    renderChain();
+    save();
+  });
 
   state = load();
   renderAll();
