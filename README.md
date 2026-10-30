@@ -17,6 +17,7 @@ A free, browser-based 1D tolerance stack-up calculator for mechanical and precis
 - **Exports**: CSV and Excel (.xlsx) downloads with three tables: contributors, results by temperature and Monte Carlo histogram data, in the unit currently selected
 - **PDF report**: A4 report with header (stack, date, revision, author), summary, contributors, chain diagram, results, histograms at all three temperatures, contribution chart and method notes. Press *PDF report* and choose *Save as PDF* in the print dialog
 - **Light/dark theme toggle**: follows the system setting until switched, then remembered per browser
+- **English, German, Dutch and Turkish**: pick the language in the header; it starts in your browser language and is remembered per browser. Examples load with names in the chosen language; your own stacks keep the names you typed
 - **Eight worked examples**: bearing cover gap, DIN 471 retaining ring play, gear centre distance with bearing play, sheet metal bracket, pin-located sensor bracket, two-pin machining fixture, ball screw stage with a warm screw, PCB in a plastic housing from −40 to 85 °C
 
 Stacks are saved in the browser and can be saved and loaded as .json files.
@@ -39,6 +40,7 @@ ISO 286-1 deviations are computed from the fundamental deviation rules for sizes
 
 - `index.html`: the user interface
 - `engine.js`: calculation engine, also usable from Node (`require('./engine.js')`)
+- `i18n.js`: translation helper; `i18n/de.js`, `i18n/nl.js`, `i18n/tr.js` map the English text to each language
 
 ## Disclaimer
 

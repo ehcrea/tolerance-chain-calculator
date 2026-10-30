@@ -99,7 +99,10 @@
     const x = Number(t);
     return isFinite(x) ? x : d;
   }
-  function fail(msg) { throw new Error(msg); }
+  // Messages are English templates with {placeholders}; key and vars let the interface translate them.
+  function fill(key, vars) { return vars ? key.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)) : key; }
+  function bad(key, vars) { return { err: fill(key, vars), errKey: key, errVars: vars }; }
+  function fail(key, vars) { const e = new Error(fill(key, vars)); e.key = key; e.vars = vars; throw e; }
   function idx(list, D) {
     if (!(D > 0) || D > list[list.length - 1]) return -1;
     for (let i = 0; i < list.length; i++) if (D <= list[i]) return i;
@@ -109,50 +112,50 @@
 
   function shaftDevUm(l, grade, D) {
     const i = idx(MAIN, D);
-    if (i < 0) return { err: 'ISO 286 covers sizes above 0 up to 500 mm' };
+    if (i < 0) return bad('ISO 286 covers sizes above 0 up to 500 mm');
     const it = IT[grade] && IT[grade][i];
-    if (it == null) return { err: 'Grade IT' + grade + ' is outside IT4–IT13' };
+    if (it == null) return bad('Grade IT{g} is outside IT4–IT13', { g: grade });
     let es, ei;
     if (UPPER[l]) { es = -UPPER[l][i]; ei = es - it; }
     else if (l === 'js') { es = halfIT(it); ei = -es; }
     else if (l === 'k') { ei = grade >= 4 && grade <= 7 ? LOWER.k[i] : 0; es = ei + it; }
     else if (LOWER[l]) { ei = LOWER[l][i]; es = ei + it; }
     else if (LOWER_FINE[l]) { ei = LOWER_FINE[l][idx(FINE, D)]; es = ei + it; }
-    else return { err: 'Shaft letter "' + l + '" is not supported (d e f g h js k m n p r s)' };
+    else return bad('Shaft letter "{l}" is not supported (d e f g h js k m n p r s)', { l });
     return { up: es, lo: ei };
   }
 
   function holeDevUm(L, grade, D) {
     const l = L.toLowerCase();
     const i = idx(MAIN, D);
-    if (i < 0) return { err: 'ISO 286 covers sizes above 0 up to 500 mm' };
+    if (i < 0) return bad('ISO 286 covers sizes above 0 up to 500 mm');
     const it = IT[grade] && IT[grade][i];
-    if (it == null) return { err: 'Grade IT' + grade + ' is outside IT4–IT13' };
+    if (it == null) return bad('Grade IT{g} is outside IT4–IT13', { g: grade });
     let ES, EI;
     if (UPPER[l]) { EI = UPPER[l][i]; ES = EI + it; }
     else if (l === 'js') { ES = halfIT(it); EI = -ES; }
     else if (l === 'k' || l === 'm' || l === 'n') {
       const ei = LOWER[l][i];
       if (grade <= 8) {
-        if (!DELTA[grade]) return { err: 'Hole ' + L + grade + ': use grades IT5–IT8' };
+        if (!DELTA[grade]) return bad('Hole {code}: use grades IT5–IT8', { code: L + grade });
         ES = -ei + DELTA[grade][i];
       } else ES = l === 'm' ? -ei : 0;
       EI = ES - it;
     } else if (l === 'p' || LOWER_FINE[l]) {
       const ei = l === 'p' ? LOWER.p[i] : LOWER_FINE[l][idx(FINE, D)];
       if (grade <= 7) {
-        if (!DELTA[grade]) return { err: 'Hole ' + L + grade + ': use grades IT5 and up' };
+        if (!DELTA[grade]) return bad('Hole {code}: use grades IT5 and up', { code: L + grade });
         ES = -ei + DELTA[grade][i];
       } else ES = -ei;
       EI = ES - it;
-    } else return { err: 'Hole letter "' + L + '" is not supported (D E F G H JS K M N P R S)' };
+    } else return bad('Hole letter "{l}" is not supported (D E F G H JS K M N P R S)', { l: L });
     return { up: ES, lo: EI };
   }
 
   // "H7", "g6", "JS7" at nominal D (mm) → deviations in mm
   function iso286(code, D) {
     const m = String(code || '').trim().match(/^(JS|js|[A-Za-z])\s*(\d{1,2})$/);
-    if (!m) return { err: 'Enter an ISO 286 code such as H7, g6 or JS7' };
+    if (!m) return bad('Enter an ISO 286 code such as H7, g6 or JS7');
     const letter = m[1], grade = +m[2];
     const hole = letter[0] === letter[0].toUpperCase();
     const r = hole ? holeDevUm(letter, grade, D) : shaftDevUm(letter.toLowerCase(), grade, D);
@@ -208,12 +211,12 @@
   function linTol(r, nom) {
     if (r.tolMode === 'iso286') {
       const t = iso286(r.iso, nom);
-      if (t.err) fail(t.err);
+      if (t.err) fail(t.errKey, t.errVars);
       return { up: t.up, lo: t.lo, info: { mode: 'iso286', code: t.code } };
     }
     if (r.tolMode === 'iso2768') {
       const t = iso2768Lin(r.cls, Math.abs(nom));
-      if (t == null) fail('ISO 2768-1 class ' + r.cls + ' has no value for ' + Math.abs(nom) + ' mm');
+      if (t == null) fail('ISO 2768-1 class {cls} has no value for {size} mm', { cls: r.cls, size: Math.abs(nom) });
       return { up: t, lo: -t, info: { mode: 'iso2768', cls: r.cls } };
     }
     const up = num(r.up, 0), lo = num(r.lo, 0);
@@ -246,7 +249,7 @@
   function devs(mode, code, up, lo, D, hole) {
     if (mode === 'iso') {
       const t = iso286(code, D);
-      if (t.err) fail(t.err);
+      if (t.err) fail(t.errKey, t.errVars);
       if (hole && !t.hole) fail('Hole codes use capitals, e.g. H7');
       if (!hole && t.hole) fail('Shaft and pin codes use lower case, e.g. g6');
       return { up: t.up, lo: t.lo, code: t.code };
@@ -330,7 +333,7 @@
     const temps = [['cold', num(st.tCold, 20)], ['ref', 20], ['hot', num(st.tHot, 20)]];
     return temps.map(([key, T], ci) => {
       const models = st.rows.map(r => {
-        try { return rowModel(r, T); } catch (e) { return { err: e.message || 'Check this contributor' }; }
+        try { return rowModel(r, T); } catch (e) { return e.key ? bad(e.key, e.vars) : bad('Check this contributor'); }
       });
       const live = models.filter(m => !m.err);
       let nominal = 0, sumH = 0, sumH2 = 0;

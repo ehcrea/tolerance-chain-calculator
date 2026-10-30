@@ -72,7 +72,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
 .brand svg { flex: none; }
 .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; max-width: 100%; }
+/* option text sets a select's width; long translated example names must not push it past the screen */
+#example { max-width: 100%; }
 .btn { border: 1px solid var(--line-strong); background: var(--panel); border-radius: var(--r); padding: 6px 12px; cursor: pointer; white-space: nowrap; }
 .btn:hover { border-color: var(--accent); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
@@ -212,7 +214,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
 .notes code { font-family: var(--font-mono); font-size: 12.5px; }
 
 #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 8px 10px 8px 14px; display: flex; gap: 12px; align-items: center; font-size: 13px; z-index: 20; box-shadow: 0 6px 24px rgba(0,0,0,0.2); max-width: calc(100% - 32px); }
-#toast button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 10px; cursor: pointer; }
+#toast button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 4px; padding: 2px 10px; cursor: pointer; white-space: nowrap; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 /* report: hidden on screen, the only thing printed */
 .report { display: none; }
@@ -270,247 +272,257 @@ details.panel[open] > summary { margin-bottom: 12px; }
     <div class="brand">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="6" fill="var(--accent)"/><path d="M8 14h24M8 26h14" stroke="var(--accent-ink)" stroke-width="2"/><path d="M8 10v8M32 10v8M8 22v8M22 22v8" stroke="var(--accent-ink)" stroke-width="1.6"/><path d="M11 14l3-2v4zM29 14l-3-2v4z" fill="var(--accent-ink)"/></svg>
       <div>
-        <h1>Tolerance Chain Calculator</h1>
-        <p>1D stack-up · ISO 286-1 fits · ISO 2768-1 · thermal expansion at 20 °C reference · play · worst case, RSS, Monte Carlo</p>
+        <h1 data-i18n>Tolerance Chain Calculator</h1>
+        <p data-i18n>1D stack-up · ISO 286-1 fits · ISO 2768-1 · thermal expansion at 20 °C reference · play · worst case, RSS, Monte Carlo</p>
       </div>
     </div>
     <div class="toolbar">
-      <div class="tabs" id="unitTabs" role="group" aria-label="Units">
+      <div class="tabs" id="unitTabs" role="group" aria-label="Units" data-i18n-attr="aria-label">
         <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
-        <button type="button" data-units="imp" aria-pressed="false">Imperial · in</button>
+        <button type="button" data-units="imp" aria-pressed="false" data-i18n>Imperial · in</button>
       </div>
-      <label class="sr" for="example">Load an example stack</label>
+      <label class="sr" for="example" data-i18n>Load an example stack</label>
       <select id="example" class="btn">
-        <option value="">Load example…</option>
-        <optgroup label="Shafts and bearings">
-          <option value="bearing">Bearing cover axial gap</option>
-          <option value="circlip">Retaining ring (DIN 471) axial play</option>
-          <option value="gear">Gear centre distance with bearing play</option>
+        <option value="" data-i18n>Load example…</option>
+        <optgroup label="Shafts and bearings" data-i18n-attr="label">
+          <option value="bearing" data-i18n>Bearing cover axial gap</option>
+          <option value="circlip" data-i18n>Retaining ring (DIN 471) axial play</option>
+          <option value="gear" data-i18n>Gear centre distance with bearing play</option>
         </optgroup>
-        <optgroup label="Sheet metal">
-          <option value="sheet">Bent bracket to enclosure lid</option>
+        <optgroup label="Sheet metal" data-i18n-attr="label">
+          <option value="sheet" data-i18n>Bent bracket to enclosure lid</option>
         </optgroup>
-        <optgroup label="Precision and locating">
-          <option value="pins">Pin-located sensor bracket</option>
-          <option value="fixture">Two-pin machining fixture</option>
+        <optgroup label="Precision and locating" data-i18n-attr="label">
+          <option value="pins" data-i18n>Pin-located sensor bracket</option>
+          <option value="fixture" data-i18n>Two-pin machining fixture</option>
         </optgroup>
-        <optgroup label="Thermal">
-          <option value="ballscrew">Ball screw stage, warm screw</option>
-          <option value="pcb">PCB in plastic housing, −40 to 85 °C</option>
+        <optgroup label="Thermal" data-i18n-attr="label">
+          <option value="ballscrew" data-i18n>Ball screw stage, warm screw</option>
+          <option value="pcb" data-i18n>PCB in plastic housing, −40 to 85 °C</option>
         </optgroup>
       </select>
       <button class="btn" id="newStack" type="button">New stack</button>
       <span class="tb-sep" aria-hidden="true"></span>
-      <button class="btn" id="dlCsv" type="button" title="Download results as CSV">CSV</button>
-      <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook">Excel</button>
-      <button class="btn primary" id="pdfReport" type="button" title="Open a print-ready report; choose Save as PDF in the print dialog">PDF report</button>
-      <button class="btn icon" id="btnTheme" type="button" title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
+      <button class="btn" id="dlCsv" type="button" title="Download results as CSV" data-i18n-attr="title">CSV</button>
+      <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook" data-i18n-attr="title">Excel</button>
+      <button class="btn primary" id="pdfReport" type="button" title="Open a print-ready report; choose Save as PDF in the print dialog" data-i18n data-i18n-attr="title">PDF report</button>
+      <label class="sr" for="langSelect" data-i18n>Language</label>
+      <select class="btn" id="langSelect" title="Language" data-i18n-attr="title"></select>
+      <button class="btn icon" id="btnTheme" type="button" title="Toggle light/dark theme" aria-label="Toggle theme" data-i18n-attr="title aria-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
     </div>
   </header>
 
   <main class="layout">
-    <section class="editor" aria-label="Stack editor">
+    <section class="editor" aria-label="Stack editor" data-i18n-attr="aria-label">
       <div class="panel setup">
-        <div class="panel-head"><h2>Stack</h2><span class="hint">Saved in this browser as you type</span></div>
+        <div class="panel-head"><h2 data-i18n>Stack</h2><span class="hint" data-i18n>Saved in this browser as you type</span></div>
         <div class="grid">
-          <label class="fld name" for="st-name"><span class="lab">Stack name</span><input id="st-name" data-s="name" autocomplete="off"></label>
-          <label class="fld" for="st-lsl"><span class="lab">Lower limit <em data-unit="len">mm</em></span><input id="st-lsl" data-s="lsl" data-u="len" inputmode="decimal" placeholder="none"></label>
-          <label class="fld" for="st-usl"><span class="lab">Upper limit <em data-unit="len">mm</em></span><input id="st-usl" data-s="usl" data-u="len" inputmode="decimal" placeholder="none"></label>
-          <label class="fld" for="st-tCold"><span class="lab">Ambient min <em data-unit="temp">°C</em></span><input id="st-tCold" data-s="tCold" data-u="temp" inputmode="decimal"></label>
-          <label class="fld" for="st-tHot"><span class="lab">Ambient max <em data-unit="temp">°C</em></span><input id="st-tHot" data-s="tHot" data-u="temp" inputmode="decimal"></label>
-          <label class="fld" for="st-n"><span class="lab">Monte Carlo runs</span>
+          <label class="fld name" for="st-name"><span class="lab" data-i18n>Stack name</span><input id="st-name" data-s="name" autocomplete="off"></label>
+          <label class="fld" for="st-lsl"><span class="lab"><span data-i18n>Lower limit</span> <em data-unit="len">mm</em></span><input id="st-lsl" data-s="lsl" data-u="len" inputmode="decimal" placeholder="none" data-i18n-attr="placeholder"></label>
+          <label class="fld" for="st-usl"><span class="lab"><span data-i18n>Upper limit</span> <em data-unit="len">mm</em></span><input id="st-usl" data-s="usl" data-u="len" inputmode="decimal" placeholder="none" data-i18n-attr="placeholder"></label>
+          <label class="fld" for="st-tCold"><span class="lab"><span data-i18n>Ambient min</span> <em data-unit="temp">°C</em></span><input id="st-tCold" data-s="tCold" data-u="temp" inputmode="decimal"></label>
+          <label class="fld" for="st-tHot"><span class="lab"><span data-i18n>Ambient max</span> <em data-unit="temp">°C</em></span><input id="st-tHot" data-s="tHot" data-u="temp" inputmode="decimal"></label>
+          <label class="fld" for="st-n"><span class="lab" data-i18n>Monte Carlo runs</span>
             <select id="st-n" data-s="n"><option value="20000">20 000</option><option value="50000">50 000</option><option value="100000">100 000</option><option value="250000">250 000</option></select>
           </label>
-          <label class="fld" for="st-author"><span class="lab">Author</span><input id="st-author" data-s="author" autocomplete="off" placeholder="for the report"></label>
-          <label class="fld" for="st-rev"><span class="lab">Revision</span><input id="st-rev" data-s="rev" autocomplete="off" placeholder="A"></label>
-          <label class="fld res" for="st-result"><span class="lab">What the result measures</span><input id="st-result" data-s="result" autocomplete="off" placeholder="e.g. Axial gap between cover and bearing"></label>
+          <label class="fld" for="st-author"><span class="lab" data-i18n>Author</span><input id="st-author" data-s="author" autocomplete="off" placeholder="for the report" data-i18n-attr="placeholder"></label>
+          <label class="fld" for="st-rev"><span class="lab" data-i18n>Revision</span><input id="st-rev" data-s="rev" autocomplete="off" placeholder="A"></label>
+          <label class="fld res" for="st-result"><span class="lab" data-i18n>What the result measures</span><input id="st-result" data-s="result" autocomplete="off" placeholder="e.g. Axial gap between cover and bearing" data-i18n-attr="placeholder"></label>
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>Chain at <span data-ref-temp>20 °C</span></h2>
-          <div class="tabs" id="chainMode" role="group" aria-label="Arrow lengths"><button type="button" data-chain="equal" aria-pressed="true">Equal steps</button><button type="button" data-chain="scale" aria-pressed="false">True scale</button></div>
+        <div class="panel-head"><h2><span data-i18n>Chain at</span> <span data-ref-temp>20 °C</span></h2>
+          <div class="tabs" id="chainMode" role="group" aria-label="Arrow lengths" data-i18n-attr="aria-label"><button type="button" data-chain="equal" aria-pressed="true" data-i18n>Equal steps</button><button type="button" data-chain="scale" aria-pressed="false" data-i18n>True scale</button></div>
         </div>
         <div class="chain-wrap">
-          <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram. Select a row to go to its contributor."></svg></div>
+          <div class="scrollx"><svg id="chainSvg" role="img" aria-label="Dimension chain diagram. Select a row to go to its contributor." data-i18n-attr="aria-label"></svg></div>
           <div id="chainTip" role="tooltip" hidden></div>
         </div>
-        <div class="ch-legend"><span>Arrows right add, left subtract · band = ± tolerance · circle = zero nominal · click a row to edit</span><span>Colour: share of variance</span><span>low</span><span class="ch-ramp" aria-hidden="true"></span><span>high</span></div>
+        <div class="ch-legend"><span data-i18n>Arrows right add, left subtract · band = ± tolerance · circle = zero nominal · click a row to edit</span><span data-i18n>Colour: share of variance</span><span data-i18n>low</span><span class="ch-ramp" aria-hidden="true"></span><span data-i18n>high</span></div>
       </div>
 
-      <div class="rows-head"><h2>Contributors</h2><span class="hint mono">result = Σ direction × factor × value</span></div>
+      <div class="rows-head"><h2 data-i18n>Contributors</h2><span class="hint mono" data-i18n>result = Σ direction × factor × value</span></div>
       <div id="rows"></div>
       <div class="addbar">
-        <span>Add</span>
-        <button class="btn small" type="button" data-add="lin">Dimension</button>
-        <button class="btn small" type="button" data-add="ang">Angle / form</button>
-        <button class="btn small" type="button" data-add="fit">Fit / pin</button>
-        <button class="btn small" type="button" data-add="play">Play / clearance</button>
+        <span data-i18n>Add</span>
+        <button class="btn small" type="button" data-add="lin" data-i18n>Dimension</button>
+        <button class="btn small" type="button" data-add="ang" data-i18n>Angle / form</button>
+        <button class="btn small" type="button" data-add="fit" data-i18n>Fit / pin</button>
+        <button class="btn small" type="button" data-add="play" data-i18n>Play / clearance</button>
       </div>
 
       <details class="panel" id="ioPanel">
-        <summary>Import and export</summary>
+        <summary data-i18n>Import and export</summary>
         <div class="io-actions">
-          <button class="btn small" type="button" id="saveJson">Save stack .json</button>
-          <button class="btn small" type="button" id="copyJson">Copy stack JSON</button>
-          <button class="btn small" type="button" id="loadText">Load JSON from box</button>
-          <label class="btn small" for="fileIn">Open .json file</label>
+          <button class="btn small" type="button" id="saveJson" data-i18n>Save stack .json</button>
+          <button class="btn small" type="button" id="copyJson" data-i18n>Copy stack JSON</button>
+          <button class="btn small" type="button" id="loadText" data-i18n>Load JSON from box</button>
+          <label class="btn small" for="fileIn" data-i18n>Open .json file</label>
           <input class="sr" type="file" id="fileIn" accept=".json,application/json">
         </div>
-        <label class="sr" for="ioText">Stack JSON</label>
-        <textarea id="ioText" spellcheck="false" placeholder="Copied JSON appears here. Paste a saved stack here and press Load."></textarea>
+        <label class="sr" for="ioText" data-i18n>Stack JSON</label>
+        <textarea id="ioText" spellcheck="false" placeholder="Copied JSON appears here. Paste a saved stack here and press Load." data-i18n-attr="placeholder"></textarea>
       </details>
 
       <details class="panel">
-        <summary>Method notes</summary>
+        <summary data-i18n>Method notes</summary>
         <dl class="notes" id="methodNotes">
-          <dt>Sign convention</dt>
-          <dd>Each contributor has a direction (+ adds to the result, − subtracts) and an optional factor, e.g. a lever ratio. Worst case and RSS use each contributor's mean (centre of its zone) and half range <code>h</code>.</dd>
-          <dt>Worst case and RSS</dt>
-          <dd>Worst case is <code>Σm ± Σh</code>. RSS is <code>Σm ± √Σh²</code>, which assumes every tolerance is a centred ±3σ normal process.</dd>
-          <dt>Monte Carlo</dt>
-          <dd>Each contributor is sampled from its own distribution. Normal means the tolerance zone is ±3σ about its centre, unbounded, so a few samples land past the worst case. Contribution bars show the share of result variance.</dd>
-          <dt>Thermal expansion</dt>
-          <dd>Sizes are defined at 20 °C (ISO 1). A part at ambient T plus its own ΔT grows by <code>α·L·(T + ΔT − 20)</code>. Fits change clearance by <code>D·(α_hole·ΔT_hole − α_shaft·ΔT_shaft)</code>.</dd>
-          <dt>Angle and form</dt>
-          <dd>An angular tolerance ±θ moves a point at lever arm L by <code>L·tan θ</code>. A geometric zone t over length Lz (perpendicularity, parallelism) is treated as a tilt of up to <code>t / Lz</code>. ISO 2768-1 angles use the shorter leg length.</dd>
-          <dt>Fits, pins and play</dt>
-          <dd>Clearance is diametral: <code>hole − shaft</code>. Floating means the part can sit anywhere within ±½ clearance (uniform). Pushed to one side gives +½ clearance, e.g. under gravity or a spring. Where clearance is zero or negative (transition or interference) the float is zero.</dd>
-          <dt>ISO 286 codes</dt>
-          <dd>Deviations are computed from the ISO 286-1 fundamental deviation rules for 0–500 mm, letters D–H, JS, K, M, N, P, R, S (holes) and d–h, js, k, m, n, p, r, s (shafts), grades IT4–IT13. Check critical fits against the published tables, which list a few special cases. Rolling bearing ring tolerances (ISO 492) go in as plain deviations.</dd>
+          <dt data-i18n>Sign convention</dt>
+          <dd data-i18n-html>Each contributor has a direction (+ adds to the result, − subtracts) and an optional factor, e.g. a lever ratio. Worst case and RSS use each contributor's mean (centre of its zone) and half range <code>h</code>.</dd>
+          <dt data-i18n>Worst case and RSS</dt>
+          <dd data-i18n-html>Worst case is <code>Σm ± Σh</code>. RSS is <code>Σm ± √Σh²</code>, which assumes every tolerance is a centred ±3σ normal process.</dd>
+          <dt data-i18n>Monte Carlo</dt>
+          <dd data-i18n-html>Each contributor is sampled from its own distribution. Normal means the tolerance zone is ±3σ about its centre, unbounded, so a few samples land past the worst case. Contribution bars show the share of result variance.</dd>
+          <dt data-i18n>Thermal expansion</dt>
+          <dd data-i18n-html>Sizes are defined at 20 °C (ISO 1). A part at ambient T plus its own ΔT grows by <code>α·L·(T + ΔT − 20)</code>. Fits change clearance by <code>D·(α_hole·ΔT_hole − α_shaft·ΔT_shaft)</code>.</dd>
+          <dt data-i18n>Angle and form</dt>
+          <dd data-i18n-html>An angular tolerance ±θ moves a point at lever arm L by <code>L·tan θ</code>. A geometric zone t over length Lz (perpendicularity, parallelism) is treated as a tilt of up to <code>t / Lz</code>. ISO 2768-1 angles use the shorter leg length.</dd>
+          <dt data-i18n>Fits, pins and play</dt>
+          <dd data-i18n-html>Clearance is diametral: <code>hole − shaft</code>. Floating means the part can sit anywhere within ±½ clearance (uniform). Pushed to one side gives +½ clearance, e.g. under gravity or a spring. Where clearance is zero or negative (transition or interference) the float is zero.</dd>
+          <dt data-i18n>ISO 286 codes</dt>
+          <dd data-i18n-html>Deviations are computed from the ISO 286-1 fundamental deviation rules for 0–500 mm, letters D–H, JS, K, M, N, P, R, S (holes) and d–h, js, k, m, n, p, r, s (shafts), grades IT4–IT13. Check critical fits against the published tables, which list a few special cases. Rolling bearing ring tolerances (ISO 492) go in as plain deviations.</dd>
         </dl>
       </details>
     </section>
 
-    <aside class="results" aria-label="Results">
+    <aside class="results" aria-label="Results" data-i18n-attr="aria-label">
       <div class="panel">
-        <div class="panel-head"><h2>Result</h2><span class="hint" id="mcInfo"></span></div>
+        <div class="panel-head"><h2 data-i18n>Result</h2><span class="hint" id="mcInfo"></span></div>
         <p class="res-caption" id="resCaption"></p>
         <div class="scrollx"><table class="res-table" id="resTable"></table></div>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>Distribution</h2><div class="tabs" id="caseTabs" role="group" aria-label="Temperature case"></div></div>
-        <svg id="hist" viewBox="0 0 480 250" role="img" aria-label="Monte Carlo histogram of the result"></svg>
+        <div class="panel-head"><h2 data-i18n>Distribution</h2><div class="tabs" id="caseTabs" role="group" aria-label="Temperature case" data-i18n-attr="aria-label"></div></div>
+        <svg id="hist" viewBox="0 0 480 250" role="img" aria-label="Monte Carlo histogram of the result" data-i18n-attr="aria-label"></svg>
       </div>
       <div class="panel">
-        <div class="panel-head"><h2>Contribution at <span data-ref-temp>20 °C</span></h2><span class="hint">share of variance · share of worst case</span></div>
+        <div class="panel-head"><h2><span data-i18n>Contribution at</span> <span data-ref-temp>20 °C</span></h2><span class="hint" data-i18n>share of variance · share of worst case</span></div>
         <div class="par" id="pareto"></div>
       </div>
     </aside>
   </main>
 </div>
-<section id="report" class="report" aria-label="Printable report"></section>
-<div id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
+<section id="report" class="report" aria-label="Printable report" data-i18n-attr="aria-label"></section>
+<div id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastUndo" data-i18n>Undo</button></div>
 
 <script src="engine.js" charset="utf-8"></script>
+<script src="i18n.js" charset="utf-8"></script>
+<script src="i18n/de.js" charset="utf-8"></script>
+<script src="i18n/nl.js" charset="utf-8"></script>
+<script src="i18n/tr.js" charset="utf-8"></script>
 <script>
 (function () {
   'use strict';
   const E = window.TCE;
+  const t = I18N.t;
   const KEY = 'tcc.v1';
   const $ = s => document.querySelector(s);
   let state, nextId = 1, results = null, activeCase = 'ref', timer = 0, undoState = null, toastTimer = 0, newArmed = 0;
 
   const TYPE_NAME = { lin: 'Dimension', ang: 'Angle / form', fit: 'Fit / pin', play: 'Play' };
   const DIST = [['normal', 'Normal, ±3σ'], ['uniform', 'Uniform'], ['triangular', 'Triangular']];
-  const matOpts = () => E.MATERIALS.map(m => [m.id, m.alpha == null ? 'Custom α…' : m.alpha === 0 ? m.name : m.name + ' · ' + +toU(m.alpha, 'alpha').toFixed(1)]);
+  const typeName = type => t(TYPE_NAME[type]);
+  const errTxt = m => (m && m.err ? t(m.errKey || m.err, m.errVars) : '');
+  // [value, English text, untranslated suffix]
+  const matOpts = () => E.MATERIALS.map(m => [m.id, m.alpha == null ? 'Custom α…' : m.name, m.alpha ? ' · ' + +toU(m.alpha, 'alpha').toFixed(1) : '']);
   const EFF = [['float', 'Floats ±½ clearance'], ['side', 'Pushed to one side'], ['full', 'Full clearance adds']];
   const CLS = [['f', 'f · fine'], ['m', 'm · medium'], ['c', 'c · coarse'], ['v', 'v · very coarse']];
 
   function newRow(type) {
     const b = { id: nextId++, type, dir: 1, k: '1', dist: 'normal' };
-    if (type === 'lin') return Object.assign(b, { label: 'Dimension', nom: '10', tolMode: 'dev', up: '0.05', lo: '-0.05', iso: 'h7', cls: 'm', mat: 'steel', alpha: '', dT: '0' });
-    if (type === 'ang') return Object.assign(b, { label: 'Angular deviation', L: '20', angMode: 'angle', ang: '0.1', unit: 'deg', t: '0.02', Lz: '20', cls: 'm', leg: '' });
-    if (type === 'fit') return Object.assign(b, { label: 'Pin in hole', D: '6', hMode: 'iso', hIso: 'H7', hUp: '0.012', hLo: '0', sMode: 'iso', sIso: 'g6', sUp: '-0.004', sLo: '-0.012', hMat: 'steel', sMat: 'steel', hAlpha: '', sAlpha: '', dTh: '0', dTs: '0', eff: 'float' });
-    return Object.assign(b, { label: 'Play', pmin: '0.01', pmax: '0.03', eff: 'float', dist: 'uniform' });
+    if (type === 'lin') return Object.assign(b, { label: t('Dimension'), nom: '10', tolMode: 'dev', up: '0.05', lo: '-0.05', iso: 'h7', cls: 'm', mat: 'steel', alpha: '', dT: '0' });
+    if (type === 'ang') return Object.assign(b, { label: t('Angular deviation'), L: '20', angMode: 'angle', ang: '0.1', unit: 'deg', t: '0.02', Lz: '20', cls: 'm', leg: '' });
+    if (type === 'fit') return Object.assign(b, { label: t('Pin in hole'), D: '6', hMode: 'iso', hIso: 'H7', hUp: '0.012', hLo: '0', sMode: 'iso', sIso: 'g6', sUp: '-0.004', sLo: '-0.012', hMat: 'steel', sMat: 'steel', hAlpha: '', sAlpha: '', dTh: '0', dTs: '0', eff: 'float' });
+    return Object.assign(b, { label: t('Play'), pmin: '0.01', pmax: '0.03', eff: 'float', dist: 'uniform' });
   }
   function mk(type, o) { return Object.assign(newRow(type), o); }
 
   const EXAMPLES = {
     bearing: () => ({
-      name: 'Bearing cover', result: 'Axial gap between cover spigot and bearing outer ring', lsl: '0.05', usl: '0.40', tCold: '-20', tHot: '80', n: '100000',
+      name: t('Bearing cover'), result: t('Axial gap between cover spigot and bearing outer ring'), lsl: '0.05', usl: '0.40', tCold: '-20', tHot: '80', n: '100000',
       rows: [
-        mk('lin', { label: 'Housing: bore shoulder to face', nom: '30', up: '0.05', lo: '-0.05', mat: 'al' }),
-        mk('lin', { label: 'Bearing 6204 width B (ISO 492 normal)', dir: -1, nom: '14', up: '0', lo: '-0.12', mat: 'bearing' }),
-        mk('lin', { label: 'Spacer ring', dir: -1, nom: '12', tolMode: 'iso286', iso: 'h8', mat: 'steel' }),
-        mk('lin', { label: 'Cover spigot height', dir: -1, nom: '3.8', tolMode: 'iso2768', cls: 'f', mat: 'al' }),
-        mk('ang', { label: 'Cover tilt after screw tightening', L: '26', ang: '0.05', unit: 'deg', dist: 'uniform' }),
-        mk('ang', { label: 'Shoulder perpendicularity 0.02 over Ø52', L: '26', angMode: 'zone', t: '0.02', Lz: '52' })
+        mk('lin', { label: t('Housing: bore shoulder to face'), nom: '30', up: '0.05', lo: '-0.05', mat: 'al' }),
+        mk('lin', { label: t('Bearing 6204 width B (ISO 492 normal)'), dir: -1, nom: '14', up: '0', lo: '-0.12', mat: 'bearing' }),
+        mk('lin', { label: t('Spacer ring'), dir: -1, nom: '12', tolMode: 'iso286', iso: 'h8', mat: 'steel' }),
+        mk('lin', { label: t('Cover spigot height'), dir: -1, nom: '3.8', tolMode: 'iso2768', cls: 'f', mat: 'al' }),
+        mk('ang', { label: t('Cover tilt after screw tightening'), L: '26', ang: '0.05', unit: 'deg', dist: 'uniform' }),
+        mk('ang', { label: t('Shoulder perpendicularity 0.02 over Ø52'), L: '26', angMode: 'zone', t: '0.02', Lz: '52' })
       ]
     }),
     pins: () => ({
-      name: 'Sensor bracket', result: 'Sensor axis X position from base datum', lsl: '44.92', usl: '45.08', tCold: '10', tHot: '40', n: '100000',
+      name: t('Sensor bracket'), result: t('Sensor axis X position from base datum'), lsl: '44.92', usl: '45.08', tCold: '10', tHot: '40', n: '100000',
       rows: [
-        mk('lin', { label: 'Base: datum to dowel hole', nom: '20', up: '0.01', lo: '-0.01', mat: 'steel' }),
-        mk('fit', { label: 'Ø6 dowel (m6) in bracket slip hole', D: '6', hIso: 'F7', sIso: 'm6', hMat: 'al', sMat: 'steel' }),
-        mk('lin', { label: 'Bracket: dowel hole to sensor bore', nom: '25', up: '0.015', lo: '-0.015', mat: 'al' }),
-        mk('fit', { label: 'Sensor Ø8 in bore', D: '8', hIso: 'H7', sIso: 'g6', hMat: 'al', sMat: 'ssa' }),
-        mk('ang', { label: 'Sensor tilt: perpendicularity 0.02 over 10', L: '12', angMode: 'zone', t: '0.02', Lz: '10' }),
-        mk('lin', { label: 'Sensing axis offset (datasheet)', nom: '0', up: '0.02', lo: '-0.02', mat: 'none' })
+        mk('lin', { label: t('Base: datum to dowel hole'), nom: '20', up: '0.01', lo: '-0.01', mat: 'steel' }),
+        mk('fit', { label: t('Ø6 dowel (m6) in bracket slip hole'), D: '6', hIso: 'F7', sIso: 'm6', hMat: 'al', sMat: 'steel' }),
+        mk('lin', { label: t('Bracket: dowel hole to sensor bore'), nom: '25', up: '0.015', lo: '-0.015', mat: 'al' }),
+        mk('fit', { label: t('Sensor Ø8 in bore'), D: '8', hIso: 'H7', sIso: 'g6', hMat: 'al', sMat: 'ssa' }),
+        mk('ang', { label: t('Sensor tilt: perpendicularity 0.02 over 10'), L: '12', angMode: 'zone', t: '0.02', Lz: '10' }),
+        mk('lin', { label: t('Sensing axis offset (datasheet)'), nom: '0', up: '0.02', lo: '-0.02', mat: 'none' })
       ]
     }),
     gear: () => ({
-      name: 'Gearbox centre distance', result: 'Centre distance between pinion and gear shafts', lsl: '39.95', usl: '40.05', tCold: '-20', tHot: '70', n: '100000',
+      name: t('Gearbox centre distance'), result: t('Centre distance between pinion and gear shafts'), lsl: '39.95', usl: '40.05', tCold: '-20', tHot: '70', n: '100000',
       rows: [
-        mk('lin', { label: 'Housing: bore-to-bore distance', nom: '40', up: '0.02', lo: '-0.02', mat: 'alc' }),
-        mk('fit', { label: 'Bearing 1 OD Ø32 in housing bore', D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
-        mk('play', { label: 'Bearing 1 radial clearance (6201, CN)', pmin: '0.003', pmax: '0.018' }),
-        mk('fit', { label: 'Bearing 2 OD Ø32 in housing bore', dir: -1, D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
-        mk('play', { label: 'Bearing 2 radial clearance (6201, CN)', dir: -1, pmin: '0.003', pmax: '0.018' }),
-        mk('lin', { label: 'Gear runout at pitch circle', nom: '0', up: '0.01', lo: '-0.01', mat: 'none' })
+        mk('lin', { label: t('Housing: bore-to-bore distance'), nom: '40', up: '0.02', lo: '-0.02', mat: 'alc' }),
+        mk('fit', { label: t('Bearing 1 OD Ø32 in housing bore'), D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
+        mk('play', { label: t('Bearing 1 radial clearance (6201, CN)'), pmin: '0.003', pmax: '0.018' }),
+        mk('fit', { label: t('Bearing 2 OD Ø32 in housing bore'), dir: -1, D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
+        mk('play', { label: t('Bearing 2 radial clearance (6201, CN)'), dir: -1, pmin: '0.003', pmax: '0.018' }),
+        mk('lin', { label: t('Gear runout at pitch circle'), nom: '0', up: '0.01', lo: '-0.01', mat: 'none' })
       ]
     }),
     circlip: () => ({
-      name: 'Retaining ring axial play', result: 'Axial play between bearing inner ring and DIN 471 retaining ring', lsl: '0.02', usl: '0.35', tCold: '-20', tHot: '80', n: '100000',
+      name: t('Retaining ring axial play'), result: t('Axial play between bearing inner ring and DIN 471 retaining ring'), lsl: '0.02', usl: '0.35', tCold: '-20', tHot: '80', n: '100000',
       rows: [
-        mk('lin', { label: 'Shaft: shoulder to groove flank', nom: '14.85', up: '0.05', lo: '0' }),
-        mk('lin', { label: 'Groove width m (DIN 471)', nom: '1.1', tolMode: 'iso286', iso: 'H13' }),
-        mk('lin', { label: 'Retaining ring thickness s (DIN 471)', dir: -1, nom: '1.0', tolMode: 'iso286', iso: 'h11' }),
-        mk('lin', { label: 'Bearing 6202 width B', dir: -1, nom: '11', up: '0', lo: '-0.12', mat: 'bearing' }),
-        mk('lin', { label: 'Spacer washer', dir: -1, nom: '4', up: '0.02', lo: '-0.02' })
+        mk('lin', { label: t('Shaft: shoulder to groove flank'), nom: '14.85', up: '0.05', lo: '0' }),
+        mk('lin', { label: t('Groove width m (DIN 471)'), nom: '1.1', tolMode: 'iso286', iso: 'H13' }),
+        mk('lin', { label: t('Retaining ring thickness s (DIN 471)'), dir: -1, nom: '1.0', tolMode: 'iso286', iso: 'h11' }),
+        mk('lin', { label: t('Bearing 6202 width B'), dir: -1, nom: '11', up: '0', lo: '-0.12', mat: 'bearing' }),
+        mk('lin', { label: t('Spacer washer'), dir: -1, nom: '4', up: '0.02', lo: '-0.02' })
       ]
     }),
     sheet: () => ({
-      name: 'Sheet metal bracket', result: 'Gap between bent bracket flange and enclosure lid', lsl: '0.5', usl: '3.5', tCold: '-10', tHot: '60', n: '100000',
+      name: t('Sheet metal bracket'), result: t('Gap between bent bracket flange and enclosure lid'), lsl: '0.5', usl: '3.5', tCold: '-10', tHot: '60', n: '100000',
       rows: [
-        mk('lin', { label: 'Base plate: mounting face to lid seat', nom: '38.5', tolMode: 'iso2768', cls: 'm', mat: 'al' }),
-        mk('lin', { label: 'Bracket: bend height H', dir: -1, nom: '35', tolMode: 'iso2768', cls: 'm' }),
-        mk('lin', { label: 'Sheet thickness 1.5 (EN 10131)', dir: -1, nom: '1.5', up: '0.1', lo: '-0.1' }),
-        mk('ang', { label: 'Bend angle 90° (ISO 2768-m) over flange', L: '20', angMode: 'iso2768', cls: 'm', leg: '20' }),
-        mk('fit', { label: 'M5 screw in Ø5.5 clearance hole', D: '5.5', hMode: 'dev', hUp: '0.18', hLo: '0', sMode: 'dev', sUp: '-0.524', sLo: '-0.674', dist: 'uniform' })
+        mk('lin', { label: t('Base plate: mounting face to lid seat'), nom: '38.5', tolMode: 'iso2768', cls: 'm', mat: 'al' }),
+        mk('lin', { label: t('Bracket: bend height H'), dir: -1, nom: '35', tolMode: 'iso2768', cls: 'm' }),
+        mk('lin', { label: t('Sheet thickness 1.5 (EN 10131)'), dir: -1, nom: '1.5', up: '0.1', lo: '-0.1' }),
+        mk('ang', { label: t('Bend angle 90° (ISO 2768-m) over flange'), L: '20', angMode: 'iso2768', cls: 'm', leg: '20' }),
+        mk('fit', { label: t('M5 screw in Ø5.5 clearance hole'), D: '5.5', hMode: 'dev', hUp: '0.18', hLo: '0', sMode: 'dev', sUp: '-0.524', sLo: '-0.674', dist: 'uniform' })
       ]
     }),
     fixture: () => ({
-      name: 'Two-pin machining fixture', result: 'Machined bore X position from fixture datum', lsl: '79.97', usl: '80.03', tCold: '18', tHot: '26', n: '100000',
+      name: t('Two-pin machining fixture'), result: t('Machined bore X position from fixture datum'), lsl: '79.97', usl: '80.03', tCold: '18', tHot: '26', n: '100000',
       rows: [
-        mk('lin', { label: 'Fixture: datum to round locating pin', nom: '50', up: '0.005', lo: '-0.005' }),
-        mk('fit', { label: 'Ø10 round pin (g6) in workpiece hole H7', D: '10', hIso: 'H7', sIso: 'g6', hMat: 'al' }),
-        mk('lin', { label: 'Workpiece: locating hole to bore', nom: '30', up: '0.01', lo: '-0.01', mat: 'al' }),
-        mk('lin', { label: 'Machine positioning repeatability', nom: '0', up: '0.003', lo: '-0.003', mat: 'none' }),
-        mk('play', { label: 'Shift under clamping force', pmin: '0', pmax: '0.004', eff: 'side' })
+        mk('lin', { label: t('Fixture: datum to round locating pin'), nom: '50', up: '0.005', lo: '-0.005' }),
+        mk('fit', { label: t('Ø10 round pin (g6) in workpiece hole H7'), D: '10', hIso: 'H7', sIso: 'g6', hMat: 'al' }),
+        mk('lin', { label: t('Workpiece: locating hole to bore'), nom: '30', up: '0.01', lo: '-0.01', mat: 'al' }),
+        mk('lin', { label: t('Machine positioning repeatability'), nom: '0', up: '0.003', lo: '-0.003', mat: 'none' }),
+        mk('play', { label: t('Shift under clamping force'), pmin: '0', pmax: '0.004', eff: 'side' })
       ]
     }),
     ballscrew: () => ({
-      name: 'Ball screw stage', result: 'Tool point position at 300 mm commanded travel', lsl: '389.95', usl: '390.05', tCold: '18', tHot: '28', n: '100000',
+      name: t('Ball screw stage'), result: t('Tool point position at 300 mm commanded travel'), lsl: '389.95', usl: '390.05', tCold: '18', tHot: '28', n: '100000',
       rows: [
-        mk('lin', { label: 'Frame: base datum to fixed bearing', nom: '50', up: '0.01', lo: '-0.01', mat: 'al' }),
-        mk('lin', { label: 'Ball screw travel 300 mm, class T5 (e300 = 23 µm), runs 8 °C warm', nom: '300', up: '0.0115', lo: '-0.0115', dT: '8' }),
-        mk('play', { label: 'Fixed bearing axial play (preloaded pair)', pmin: '0', pmax: '0.002' }),
-        mk('play', { label: 'Nut backlash (preloaded nut)', pmin: '0', pmax: '0.003' }),
-        mk('lin', { label: 'Carriage: nut flange to tool point', nom: '40', up: '0.01', lo: '-0.01', mat: 'al' })
+        mk('lin', { label: t('Frame: base datum to fixed bearing'), nom: '50', up: '0.01', lo: '-0.01', mat: 'al' }),
+        mk('lin', { label: t('Ball screw travel 300 mm, class T5 (e300 = 23 µm), runs 8 °C warm'), nom: '300', up: '0.0115', lo: '-0.0115', dT: '8' }),
+        mk('play', { label: t('Fixed bearing axial play (preloaded pair)'), pmin: '0', pmax: '0.002' }),
+        mk('play', { label: t('Nut backlash (preloaded nut)'), pmin: '0', pmax: '0.003' }),
+        mk('lin', { label: t('Carriage: nut flange to tool point'), nom: '40', up: '0.01', lo: '-0.01', mat: 'al' })
       ]
     }),
     pcb: () => ({
-      name: 'PCB in plastic housing', result: 'Total side clearance between PCB edges and housing walls', lsl: '0.10', usl: '1.00', tCold: '-40', tHot: '85', n: '100000',
+      name: t('PCB in plastic housing'), result: t('Total side clearance between PCB edges and housing walls'), lsl: '0.10', usl: '1.00', tCold: '-40', tHot: '85', n: '100000',
       rows: [
-        mk('lin', { label: 'Housing: inner width (moulded)', nom: '80', up: '0.15', lo: '-0.15', mat: 'pa66gf' }),
-        mk('lin', { label: 'PCB width (routed FR4, α 16)', dir: -1, nom: '79.6', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '16' }),
-        mk('lin', { label: 'Housing wall warpage', nom: '0', up: '0', lo: '-0.15', mat: 'none', dist: 'uniform' })
+        mk('lin', { label: t('Housing: inner width (moulded)'), nom: '80', up: '0.15', lo: '-0.15', mat: 'pa66gf' }),
+        mk('lin', { label: t('PCB width (routed FR4, α 16)'), dir: -1, nom: '79.6', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '16' }),
+        mk('lin', { label: t('Housing wall warpage'), nom: '0', up: '0', lo: '-0.15', mat: 'none', dist: 'uniform' })
       ]
     })
   };
   function blank() {
-    return { name: 'New stack', result: '', lsl: '', usl: '', tCold: '20', tHot: '20', n: '100000', rows: [mk('lin', { label: 'Dimension A' }), mk('lin', { label: 'Dimension B', dir: -1, nom: '9.8' })] };
+    return { name: t('New stack'), result: t(''), lsl: '', usl: '', tCold: '20', tHot: '20', n: '100000', rows: [mk('lin', { label: t('Dimension A') }), mk('lin', { label: t('Dimension B'), dir: -1, nom: '9.8' })] };
   }
 
   /* ---------- formatting ---------- */
@@ -579,31 +591,33 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }
     if (info.kind === 'ang') {
       const deg = info.a * 180 / Math.PI;
-      const ang = '±' + (deg >= 1 ? deg.toFixed(3) + '°' : (deg * 60).toFixed(2) + '′') + ' at L = ' + lenTxt(info.L) + ' ' + u;
-      if (info.mode === 'zone') return 'zone ' + lenTxt(info.t) + ' over ' + lenTxt(info.Lz) + ' ' + u + ' · ' + ang;
-      if (info.mode === 'iso2768') return 'ISO 2768-' + info.cls + ', shorter leg ' + lenTxt(info.leg) + ' ' + u + ' → ±' + (info.arcmin >= 60 ? info.arcmin / 60 + '°' : info.arcmin + '′') + ' · ' + ang;
+      const ang = t('{a} at L = {L}', { a: '±' + (deg >= 1 ? deg.toFixed(3) + '°' : (deg * 60).toFixed(2) + '′'), L: lenTxt(info.L) + ' ' + u });
+      if (info.mode === 'zone') return t('zone {t} over {Lz}', { t: lenTxt(info.t), Lz: lenTxt(info.Lz) + ' ' + u }) + ' · ' + ang;
+      if (info.mode === 'iso2768') return 'ISO 2768-' + info.cls + ', ' + t('shorter leg {leg}', { leg: lenTxt(info.leg) + ' ' + u }) + ' → ±' + (info.arcmin >= 60 ? info.arcmin / 60 + '°' : info.arcmin + '′') + ' · ' + ang;
       return ang;
     }
     if (info.kind === 'fit') {
-      return 'Ø' + lenTxt(info.D) + ' ' + (info.hole.code || 'hole') + '/' + (info.shaft.code || 'shaft') +
-        ' · hole ' + devTxt(info.hole.up, info.hole.lo) + ', shaft ' + devTxt(info.shaft.up, info.shaft.lo);
+      return 'Ø' + lenTxt(info.D) + ' ' + (info.hole.code || t('hole')) + '/' + (info.shaft.code || t('shaft')) +
+        ' · ' + t('hole {a}, shaft {b}', { a: devTxt(info.hole.up, info.hole.lo), b: devTxt(info.shaft.up, info.shaft.lo) });
     }
     return '';
   }
+  // thousands grouped with a thin space, read the same in every language
+  function group(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009'); }
   function pct(x) { return isFinite(x) ? (x * 100 >= 9.95 ? (x * 100).toFixed(0) : (x * 100).toFixed(1)) + '%' : '—'; }
   function ppm(count, n) {
     if (!count) return '0';
     const p = count / n * 1e6;
-    return p >= 10000 ? (count / n * 100).toFixed(1) + '%' : Math.round(p).toLocaleString('en-US') + ' ppm';
+    return p >= 10000 ? (count / n * 100).toFixed(1) + '%' : group(Math.round(p)) + ' ppm';
   }
 
   /* ---------- persistence ---------- */
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
   function normalize(o) {
-    if (!o || !Array.isArray(o.rows)) throw new Error('This JSON has no "rows" list');
+    if (!o || !Array.isArray(o.rows)) throw new Error(t('This JSON has no "rows" list'));
     nextId = 1;
     const rows = o.rows.map(r => {
-      if (!r || !TYPE_NAME[r.type]) throw new Error('Unknown contributor type: ' + (r && r.type));
+      if (!r || !TYPE_NAME[r.type]) throw new Error(t('Unknown contributor type: {type}', { type: r && r.type }));
       return Object.assign(newRow(r.type), r, { id: nextId++ });
     });
     const b = blank();
@@ -648,16 +662,16 @@ details.panel[open] > summary { margin-bottom: 12px; }
     o = o || {};
     const id = 'r' + r.id + '-' + k;
     if (o.u) unit = unitOf(o.u);
-    return '<label class="fld' + (o.wide ? ' wide' : '') + '" for="' + id + '"><span class="lab">' + label + (unit ? ' <em>' + unit + '</em>' : '') + '</span>' +
+    return '<label class="fld' + (o.wide ? ' wide' : '') + '" for="' + id + '"><span class="lab">' + esc(t(label)) + (unit ? ' <em>' + unit + '</em>' : '') + '</span>' +
       '<input id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (o.u ? ' data-u="' + o.u + '"' : '') + ' value="' + esc(dispVal(r[k], o.u)) + '"' + (o.text ? '' : ' inputmode="decimal"') +
       (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' autocomplete="off" spellcheck="false"></label>';
   }
-  function pick(r, k, label, opts, struct) {
+  function pick(r, k, label, opts, struct, unit) {
     const id = 'r' + r.id + '-' + k;
-    return '<label class="fld" for="' + id + '"><span class="lab">' + label + '</span><select id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (struct ? ' data-struct' : '') + '>' +
-      opts.map(([v, t]) => '<option value="' + esc(v) + '"' + (String(r[k]) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>';
+    return '<label class="fld" for="' + id + '"><span class="lab">' + esc(t(label)) + (unit ? ' <em>' + unit + '</em>' : '') + '</span><select id="' + id + '" data-id="' + r.id + '" data-k="' + k + '"' + (struct ? ' data-struct' : '') + '>' +
+      opts.map(([v, text, suffix]) => '<option value="' + esc(v) + '"' + (String(r[k]) === String(v) ? ' selected' : '') + '>' + esc(t(text) + (suffix || '')) + '</option>').join('') + '</select></label>';
   }
-  function mat(r, k, ak, label) { return pick(r, k, label, matOpts(), true) + (r[k] === 'custom' ? fld(r, ak, 'α', '', { u: 'alpha' }) : ''); }
+  function mat(r, k, ak, label, unit) { return pick(r, k, label, matOpts(), true, unit) + (r[k] === 'custom' ? fld(r, ak, 'α', '', { u: 'alpha' }) : ''); }
   const common = r => pick(r, 'dist', 'Distribution', DIST) + fld(r, 'k', 'Factor', '×');
   const L = { u: 'len' }, DT = { u: 'dtemp' };
 
@@ -667,7 +681,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       if (r.tolMode === 'iso286') h += fld(r, 'iso', 'Code', 'h7, H8, js9', { text: true });
       else if (r.tolMode === 'iso2768') h += pick(r, 'cls', 'Class', CLS);
       else h += fld(r, 'up', 'Upper dev.', '', L) + fld(r, 'lo', 'Lower dev.', '', L);
-      return h + mat(r, 'mat', 'alpha', 'Material · α ' + unitOf('alpha')) + fld(r, 'dT', 'Part ΔT vs ambient', '', DT) + common(r);
+      return h + mat(r, 'mat', 'alpha', 'Material', 'α ' + unitOf('alpha')) + fld(r, 'dT', 'Part ΔT vs ambient', '', DT) + common(r);
     }
     if (r.type === 'ang') {
       let h = fld(r, 'L', 'Lever arm L', '', L) + pick(r, 'angMode', 'Tolerance', [['angle', 'Angle ±'], ['zone', 'Geometric zone'], ['iso2768', 'ISO 2768-1']], true);
@@ -694,14 +708,14 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return '<article class="row" data-row="' + r.id + '">' +
       '<div class="row-top">' +
         '<span class="idx">' + (i + 1) + '</span>' +
-        '<button type="button" class="dir ' + (neg ? 'neg' : 'pos') + '" data-act="dir" data-id="' + r.id + '" aria-label="' + (neg ? 'Subtracts from' : 'Adds to') + ' the result. Flip direction" title="Flip direction">' + (neg ? '−' : '+') + '</button>' +
-        '<input class="name" id="r' + r.id + '-label" data-id="' + r.id + '" data-k="label" value="' + esc(r.label) + '" aria-label="Contributor name" autocomplete="off">' +
-        '<span class="tag">' + TYPE_NAME[r.type] + '</span>' +
+        '<button type="button" class="dir ' + (neg ? 'neg' : 'pos') + '" data-act="dir" data-id="' + r.id + '" aria-label="' + esc(t(neg ? 'Subtracts from the result. Flip direction' : 'Adds to the result. Flip direction')) + '" title="' + esc(t('Flip direction')) + '">' + (neg ? '−' : '+') + '</button>' +
+        '<input class="name" id="r' + r.id + '-label" data-id="' + r.id + '" data-k="label" value="' + esc(r.label) + '" aria-label="' + esc(t('Contributor name')) + '" autocomplete="off">' +
+        '<span class="tag">' + esc(typeName(r.type)) + '</span>' +
         '<div class="acts">' +
-          '<button type="button" class="ico" data-act="up" data-id="' + r.id + '" aria-label="Move up" title="Move up">↑</button>' +
-          '<button type="button" class="ico" data-act="down" data-id="' + r.id + '" aria-label="Move down" title="Move down">↓</button>' +
-          '<button type="button" class="ico" data-act="dup" data-id="' + r.id + '" aria-label="Duplicate" title="Duplicate">⧉</button>' +
-          '<button type="button" class="ico del" data-act="del" data-id="' + r.id + '" aria-label="Remove" title="Remove">✕</button>' +
+          '<button type="button" class="ico" data-act="up" data-id="' + r.id + '" aria-label="' + esc(t('Move up')) + '" title="' + esc(t('Move up')) + '">↑</button>' +
+          '<button type="button" class="ico" data-act="down" data-id="' + r.id + '" aria-label="' + esc(t('Move down')) + '" title="' + esc(t('Move down')) + '">↓</button>' +
+          '<button type="button" class="ico" data-act="dup" data-id="' + r.id + '" aria-label="' + esc(t('Duplicate')) + '" title="' + esc(t('Duplicate')) + '">⧉</button>' +
+          '<button type="button" class="ico del" data-act="del" data-id="' + r.id + '" aria-label="' + esc(t('Remove')) + '" title="' + esc(t('Remove')) + '">✕</button>' +
         '</div>' +
       '</div>' +
       '<div class="grid">' + body(r) + '</div>' +
@@ -749,11 +763,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (act === 'dir') state.rows[i].dir = +state.rows[i].dir < 0 ? 1 : -1;
     else if (act === 'up' && i > 0) state.rows.splice(i - 1, 0, state.rows.splice(i, 1)[0]);
     else if (act === 'down' && i < state.rows.length - 1) state.rows.splice(i + 1, 0, state.rows.splice(i, 1)[0]);
-    else if (act === 'dup') state.rows.splice(i + 1, 0, Object.assign({}, state.rows[i], { id: nextId++, label: state.rows[i].label + ' (copy)' }));
+    else if (act === 'dup') state.rows.splice(i + 1, 0, Object.assign({}, state.rows[i], { id: nextId++, label: t('{name} (copy)', { name: state.rows[i].label }) }));
     else if (act === 'del') {
       undoState = JSON.stringify(state);
       const gone = state.rows.splice(i, 1)[0];
-      toast('Removed “' + (gone.label || TYPE_NAME[gone.type]) + '”');
+      toast(t('Removed “{name}”', { name: gone.label || typeName(gone.type) }));
     } else return;
     renderRows();
     const again = document.querySelector('[data-act="' + act + '"][data-id="' + b.dataset.id + '"]');
@@ -786,38 +800,38 @@ details.panel[open] > summary { margin-bottom: 12px; }
   $('#example').addEventListener('change', e => {
     const k = e.target.value;
     e.target.value = '';
-    if (EXAMPLES[k]) replaceState(EXAMPLES[k](), 'Loaded example: ' + e.target.querySelector('[value="' + k + '"]').textContent);
+    if (EXAMPLES[k]) replaceState(EXAMPLES[k](), t('Loaded example: {name}', { name: e.target.querySelector('[value="' + k + '"]').textContent }));
   });
   $('#newStack').addEventListener('click', () => {
     const b = $('#newStack');
     if (!newArmed) {
-      newArmed = setTimeout(() => { newArmed = 0; b.textContent = 'New stack'; }, 3000);
-      b.textContent = 'Click again to clear';
+      newArmed = setTimeout(() => { newArmed = 0; b.textContent = t('New stack'); }, 3000);
+      b.textContent = t('Click again to clear');
       return;
     }
-    clearTimeout(newArmed); newArmed = 0; b.textContent = 'New stack';
-    replaceState(blank(), 'Started a new stack');
+    clearTimeout(newArmed); newArmed = 0; b.textContent = t('New stack');
+    replaceState(blank(), t('Started a new stack'));
   });
 
   /* ---------- import / export ---------- */
   function copy(text, what) {
     $('#ioText').value = text;
-    const fallback = () => { $('#ioText').focus(); $('#ioText').select(); toast(what + ' is in the box below. Copy it with ⌘C / Ctrl+C', true); };
+    const fallback = () => { $('#ioText').focus(); $('#ioText').select(); toast(t('{what} is in the box below. Copy it with ⌘C / Ctrl+C', { what }), true); };
     try {
-      navigator.clipboard.writeText(text).then(() => toast(what + ' copied to clipboard', true), fallback);
+      navigator.clipboard.writeText(text).then(() => toast(t('{what} copied to clipboard', { what }), true), fallback);
     } catch (e) { fallback(); }
   }
   $('#copyJson').addEventListener('click', () => {
     const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
-    copy(JSON.stringify(out, null, 2), 'Stack JSON');
+    copy(JSON.stringify(out, null, 2), t('Stack JSON'));
   });
   $('#saveJson').addEventListener('click', () => {
     const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
     download(fileBase() + '.json', new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
   });
   function loadJsonText(txt) {
-    try { replaceState(JSON.parse(txt), 'Stack loaded'); }
-    catch (e) { toast('Could not load: ' + e.message, true); }
+    try { replaceState(JSON.parse(txt), t('Stack loaded')); }
+    catch (e) { toast(t('Could not load: {msg}', { msg: e.message }), true); }
   }
   $('#loadText').addEventListener('click', () => loadJsonText($('#ioText').value));
   $('#fileIn').addEventListener('change', e => {
@@ -836,15 +850,15 @@ details.panel[open] > summary { margin-bottom: 12px; }
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    toast('Downloaded ' + name, true);
+    toast(t('Downloaded {name}', { name }), true);
   }
   function fileBase() {
     const s = String(state.name || 'stack').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     return (s || 'stack') + '-tolerance-stack';
   }
-  const MAT_NAME = id => (E.MATERIALS.find(m => m.id === id) || {}).name || '';
-  const EFF_NAME = id => (EFF.find(e => e[0] === id) || EFF[0])[1];
-  const DIST_NAME = id => (DIST.find(d => d[0] === id) || DIST[0])[1];
+  const MAT_NAME = id => t((E.MATERIALS.find(m => m.id === id) || {}).name || '');
+  const EFF_NAME = id => t((EFF.find(e => e[0] === id) || EFF[0])[1]);
+  const DIST_NAME = id => t((DIST.find(d => d[0] === id) || DIST[0])[1]);
   function devPair(up, lo) {
     const d = x => (Math.abs(x) < 1e-12 ? '0' : (x > 0 ? '+' : '−') + lenTxt(Math.abs(x)));
     return d(up) + '/' + d(lo);
@@ -860,13 +874,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
       return n + ' ' + devPair(i.up, i.lo) + ' ' + u;
     }
     if (i.kind === 'ang') return noteOf(i);
-    if (i.kind === 'fit') return 'Ø' + lenTxt(i.D) + ' ' + (i.hole.code || devPair(i.hole.up, i.hole.lo)) + ' / ' + (i.shaft.code || devPair(i.shaft.up, i.shaft.lo)) + ' · ' + EFF_NAME(r.eff).toLowerCase();
-    return lenTxt(i.pmin) + '…' + lenTxt(i.pmax) + ' ' + u + ' · ' + EFF_NAME(r.eff).toLowerCase();
+    if (i.kind === 'fit') return 'Ø' + lenTxt(i.D) + ' ' + (i.hole.code || devPair(i.hole.up, i.hole.lo)) + ' / ' + (i.shaft.code || devPair(i.shaft.up, i.shaft.lo)) + ' · ' + EFF_NAME(r.eff);
+    return lenTxt(i.pmin) + '…' + lenTxt(i.pmax) + ' ' + u + ' · ' + EFF_NAME(r.eff);
   }
   function materialTxt(r) {
-    const one = (id, a) => (id === 'custom' ? 'Custom α ' + +toU(E.num(a, 0), 'alpha').toFixed(2) : MAT_NAME(id));
+    const one = (id, a) => (id === 'custom' ? t('Custom α') + ' ' + +toU(E.num(a, 0), 'alpha').toFixed(2) : MAT_NAME(id));
     if (r.type === 'lin') return one(r.mat, r.alpha);
-    if (r.type === 'fit') return 'hole ' + one(r.hMat, r.hAlpha) + ', shaft ' + one(r.sMat, r.sAlpha);
+    if (r.type === 'fit') return t('hole {a}, shaft {b}', { a: one(r.hMat, r.hAlpha), b: one(r.sMat, r.sAlpha) });
     return '';
   }
   const rnd = (x, d) => (isFinite(x) ? +x.toFixed(d) : '');
@@ -880,47 +894,47 @@ details.panel[open] > summary { margin-bottom: 12px; }
   function exportTables() {
     const u = LU(), [c, ref, h] = results, ld = LD();
     const tl = T => tempTxt(T);
-    const contributors = [['#', 'Contributor', 'Type', 'Direction', 'Factor', 'Specification', 'Material', 'Distribution',
-      'Mean at ' + tl(20) + ' (' + u + ')', 'Half range (' + u + ')', 'Min (' + u + ')', 'Max (' + u + ')',
-      'Mean at ' + tl(c.T) + ' (' + u + ')', 'Mean at ' + tl(h.T) + ' (' + u + ')', 'Variance share (%)', 'Worst-case share (%)', 'Input error']];
+    const contributors = [['#'].concat(['Contributor', 'Type', 'Direction', 'Factor', 'Specification', 'Material', 'Distribution'].map(k => t(k)),
+      t('Mean at {T} ({u})', { T: tl(20), u }), t('Half range ({u})', { u }), t('Min ({u})', { u }), t('Max ({u})', { u }),
+      t('Mean at {T} ({u})', { T: tl(c.T), u }), t('Mean at {T} ({u})', { T: tl(h.T), u }), t('Variance share (%)'), t('Worst-case share (%)'), t('Input error'))];
     state.rows.forEach((r, i) => {
       const m = ref.models[i], mc = c.models[i], mh = h.models[i], ok = !m.err;
       const L2 = x => (ok ? rnd(toU(x, 'len'), ld) : '');
-      contributors.push([i + 1, r.label, TYPE_NAME[r.type], +r.dir < 0 ? '−' : '+', E.num(r.k, 1), specTxt(r, m), materialTxt(r), DIST_NAME(r.dist),
+      contributors.push([i + 1, r.label, typeName(r.type), +r.dir < 0 ? '−' : '+', E.num(r.k, 1), specTxt(r, m), materialTxt(r), DIST_NAME(r.dist),
         L2(m.m), L2(m.h), L2(m.m - m.h), L2(m.m + m.h),
         mc.err ? '' : rnd(toU(mc.m, 'len'), ld), mh.err ? '' : rnd(toU(mh.m, 'len'), ld),
-        ok ? rnd(m.varShare * 100, 2) : '', ok ? rnd(m.wcShare * 100, 2) : '', m.err || '']);
+        ok ? rnd(m.varShare * 100, 2) : '', ok ? rnd(m.wcShare * 100, 2) : '', errTxt(m)]);
     });
 
     const lsl = ref.lsl, usl = ref.usl;
     const res = [
-      ['Stack', state.name], ['Result', state.result],
-      ['Lower limit (' + u + ')', isFinite(lsl) ? rnd(toU(lsl, 'len'), ld) : ''], ['Upper limit (' + u + ')', isFinite(usl) ? rnd(toU(usl, 'len'), ld) : ''],
-      ['Units', imp() ? 'Imperial (in, °F)' : 'SI (mm, °C)'], ['Monte Carlo runs', results[0].mc.n], ['Exported', localStamp()],
+      [t('Stack'), state.name], [t('Result'), state.result],
+      [t('Lower limit ({u})', { u }), isFinite(lsl) ? rnd(toU(lsl, 'len'), ld) : ''], [t('Upper limit ({u})', { u }), isFinite(usl) ? rnd(toU(usl, 'len'), ld) : ''],
+      [t('Units'), imp() ? t('Imperial (in, °F)') : 'SI (mm, °C)'], [t('Monte Carlo runs'), results[0].mc.n], [t('Exported'), localStamp()],
       [],
-      ['Metric'].concat(results.map(x => 'Ambient ' + tl(x.T)))
+      [t('Metric')].concat(results.map(x => t('Ambient {T}', { T: tl(x.T) })))
     ];
-    const row = (name, f) => res.push([name].concat(results.map(f)));
+    const row = (name, f) => res.push([t(name, { u })].concat(results.map(f)));
     const Lr = v => rnd(toU(v, 'len'), ld);
     row('Status', x => status(x)[1]);
-    row('Mean of zones (' + u + ')', x => Lr(x.nominal));
-    row('Worst case min (' + u + ')', x => Lr(x.wcLo));
-    row('Worst case max (' + u + ')', x => Lr(x.wcHi));
-    row('RSS min (' + u + ')', x => Lr(x.rssLo));
-    row('RSS max (' + u + ')', x => Lr(x.rssHi));
-    row('MC mean (' + u + ')', x => Lr(x.mc.mean));
-    row('MC standard deviation (' + u + ')', x => Lr(x.mc.sd));
-    row('MC 0.135 % quantile (' + u + ')', x => Lr(x.mc.pLo));
-    row('MC 99.865 % quantile (' + u + ')', x => Lr(x.mc.pHi));
-    row('MC min (' + u + ')', x => Lr(x.mc.min));
-    row('MC max (' + u + ')', x => Lr(x.mc.max));
+    row('Mean of zones ({u})', x => Lr(x.nominal));
+    row('Worst case min ({u})', x => Lr(x.wcLo));
+    row('Worst case max ({u})', x => Lr(x.wcHi));
+    row('RSS min ({u})', x => Lr(x.rssLo));
+    row('RSS max ({u})', x => Lr(x.rssHi));
+    row('MC mean ({u})', x => Lr(x.mc.mean));
+    row('MC standard deviation ({u})', x => Lr(x.mc.sd));
+    row('MC 0.135 % quantile ({u})', x => Lr(x.mc.pLo));
+    row('MC 99.865 % quantile ({u})', x => Lr(x.mc.pHi));
+    row('MC min ({u})', x => Lr(x.mc.min));
+    row('MC max ({u})', x => Lr(x.mc.max));
     row('MC runs below lower limit', x => x.mc.below);
     row('MC runs above upper limit', x => x.mc.above);
     row('Out of limits (ppm)', x => Math.round((x.mc.below + x.mc.above) / x.mc.n * 1e6));
     row('Cpk', x => rnd(x.cpk, 3));
 
     const hb = histBins(60);
-    const hist = [['Bin from (' + u + ')', 'Bin to (' + u + ')', 'Bin centre (' + u + ')'].concat(results.map(x => 'Count at ' + tl(x.T))).concat(results.map(x => 'Share at ' + tl(x.T) + ' (%)'))];
+    const hist = [[t('Bin from ({u})', { u }), t('Bin to ({u})', { u }), t('Bin centre ({u})', { u })].concat(results.map(x => t('Count at {T}', { T: tl(x.T) }))).concat(results.map(x => t('Share at {T} (%)', { T: tl(x.T) })))];
     hb.edges.forEach((e, b) => {
       hist.push([Lr(e), Lr(e + hb.bw), Lr(e + hb.bw / 2)].concat(hb.counts.map(cn => cn[b])).concat(hb.counts.map((cn, ci) => rnd(cn[b] / results[ci].mc.n * 100, 3))));
     });
@@ -940,10 +954,10 @@ details.panel[open] > summary { margin-bottom: 12px; }
     return { edges, bw, counts };
   }
   function csv() {
-    const t = exportTables();
+    const x = exportTables();
     const q = v => (typeof v === 'number' ? String(v) : '"' + String(v ?? '').replace(/"/g, '""') + '"');
     const block = (title, rows) => [q(title)].concat(rows.map(r => r.map(q).join(','))).join('\r\n');
-    return '﻿' + [block('RESULTS', t.results), block('CONTRIBUTORS', t.contributors), block('HISTOGRAM', t.hist)].join('\r\n\r\n') + '\r\n';
+    return '﻿' + [block(I18N.upper(t('Results')), x.results), block(I18N.upper(t('Contributors')), x.contributors), block(I18N.upper(t('Histogram')), x.hist)].join('\r\n\r\n') + '\r\n';
   }
   $('#dlCsv').addEventListener('click', () => download(fileBase() + '.csv', new Blob([csv()], { type: 'text/csv;charset=utf-8' })));
 
@@ -954,7 +968,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       const s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
       s.onload = () => res(window.XLSX);
-      s.onerror = () => { xlsxLoading = null; rej(new Error('The Excel library did not load. Check your connection and try again.')); };
+      s.onerror = () => { xlsxLoading = null; rej(new Error(t('The Excel library did not load. Check your connection and try again.'))); };
       document.head.appendChild(s);
     });
     return xlsxLoading;
@@ -964,15 +978,15 @@ details.panel[open] > summary { margin-bottom: 12px; }
     b.disabled = true;
     try {
       const X = await loadXLSX();
-      const t = exportTables();
+      const x = exportTables();
       const sheet = (rows, widths) => { const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = widths.map(w => ({ wch: w })); return ws; };
       const wb = X.utils.book_new();
-      X.utils.book_append_sheet(wb, sheet(t.contributors, [4, 36, 13, 9, 7, 40, 34, 16, 14, 14, 14, 14, 14, 14, 12, 12, 30]), 'Contributors');
-      X.utils.book_append_sheet(wb, sheet(t.results, [34, 18, 18, 18]), 'Results by temperature');
-      X.utils.book_append_sheet(wb, sheet(t.hist, [14, 14, 14, 12, 12, 12, 12, 12, 12]), 'Histogram data');
+      X.utils.book_append_sheet(wb, sheet(x.contributors, [4, 36, 13, 9, 7, 40, 34, 16, 14, 14, 14, 14, 14, 14, 12, 12, 30]), t('Contributors').slice(0, 31));
+      X.utils.book_append_sheet(wb, sheet(x.results, [34, 18, 18, 18]), t('Results by temperature').slice(0, 31));
+      X.utils.book_append_sheet(wb, sheet(x.hist, [14, 14, 14, 12, 12, 12, 12, 12, 12]), t('Histogram data').slice(0, 31));
       const name = fileBase() + '.xlsx';
       X.writeFile(wb, name);
-      toast('Downloaded ' + name, true);
+      toast(t('Downloaded {name}', { name }), true);
     } catch (e) {
       toast(e.message, true);
     } finally { b.disabled = false; }
@@ -984,7 +998,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const t0 = performance.now();
     results = E.analyze(state);
     const ms = Math.round(performance.now() - t0);
-    $('#mcInfo').textContent = (+state.n).toLocaleString('en-US') + ' runs × 3 temperatures · ' + ms + ' ms';
+    $('#mcInfo').textContent = t('{n} runs × 3 temperatures · {ms} ms', { n: group(+state.n), ms });
     updateFoots();
     renderTable();
     renderTabs();
@@ -1002,7 +1016,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       const m = ref.models[i];
       const card = el.closest('.row');
       if (!m || m.err) {
-        el.innerHTML = '<span class="err">' + esc(m ? m.err : '') + '</span>';
+        el.innerHTML = '<span class="err">' + esc(errTxt(m)) + '</span>';
         card.classList.add('has-err');
         return;
       }
@@ -1012,43 +1026,43 @@ details.panel[open] > summary { margin-bottom: 12px; }
       if (note) p.push(esc(note));
       if (m.cmin != null) {
         const range = x => clrTxt(x.cmin, x.cmax);
-        let s = 'clearance ' + range(m) + ' at ' + tempTxt(20);
+        let s = t('clearance {range} at {T}', { range: range(m), T: tempTxt(20) });
         const tc = c.models[i], th = h.models[i];
-        if (!tc.err && !th.err && (Math.abs(tc.cmin - m.cmin) > 5e-5 || Math.abs(th.cmin - m.cmin) > 5e-5)) s += ', ' + range(tc) + ' at ' + tempTxt(c.T) + ', ' + range(th) + ' at ' + tempTxt(h.T);
-        if (m.cmin <= 0) s += ' · no float where clearance ≤ 0';
+        if (!tc.err && !th.err && (Math.abs(tc.cmin - m.cmin) > 5e-5 || Math.abs(th.cmin - m.cmin) > 5e-5)) s += ', ' + t('{range} at {T}', { range: range(tc), T: tempTxt(c.T) }) + ', ' + t('{range} at {T}', { range: range(th), T: tempTxt(h.T) });
+        if (m.cmin <= 0) s += ' · ' + t('no float where clearance ≤ 0');
         p.push(s);
       } else {
         const tc = c.models[i], th = h.models[i];
-        if (!tc.err && !th.err && (Math.abs(tc.m - m.m) > 5e-6 || Math.abs(th.m - m.m) > 5e-6)) p.push('thermal ' + (fmtSL(tc.m - m.m) || '0') + ' at ' + tempTxt(c.T) + ', ' + (fmtSL(th.m - m.m) || '0') + ' at ' + tempTxt(h.T));
+        if (!tc.err && !th.err && (Math.abs(tc.m - m.m) > 5e-6 || Math.abs(th.m - m.m) > 5e-6)) p.push(t('thermal {a} at {Ta}, {b} at {Tb}', { a: fmtSL(tc.m - m.m) || '0', Ta: tempTxt(c.T), b: fmtSL(th.m - m.m) || '0', Tb: tempTxt(h.T) }));
       }
-      p.push(pct(m.varShare) + ' of variance');
+      p.push(t('{p} of variance', { p: pct(m.varShare) }));
       el.innerHTML = p.join(' · ');
     });
   }
 
   function status(x) {
     const lo = x.lsl, hi = x.usl;
-    if (!isFinite(lo) && !isFinite(hi)) return ['none', 'No limits'];
+    if (!isFinite(lo) && !isFinite(hi)) return ['none', t('No limits')];
     const inside = (a, b) => (!isFinite(lo) || a >= lo - 1e-12) && (!isFinite(hi) || b <= hi + 1e-12);
-    if (inside(x.wcLo, x.wcHi)) return ['ok', 'Pass WC'];
-    if (inside(x.rssLo, x.rssHi)) return ['warn', 'RSS only'];
-    return ['bad', 'Fail'];
+    if (inside(x.wcLo, x.wcHi)) return ['ok', t('Pass WC')];
+    if (inside(x.rssLo, x.rssHi)) return ['warn', t('RSS only')];
+    return ['bad', t('Fail')];
   }
 
   function limitsTxt() {
     const lo = results[0].lsl, hi = results[0].usl;
-    return isFinite(lo) || isFinite(hi) ? (isFinite(lo) ? fmtL(lo, 3) : '—') + ' to ' + (isFinite(hi) ? fmtL(hi, 3) : '—') + ' ' + LU() : 'none';
+    return isFinite(lo) || isFinite(hi) ? t('{lo} to {hi}', { lo: isFinite(lo) ? fmtL(lo, 3) : '—', hi: (isFinite(hi) ? fmtL(hi, 3) : '—') + ' ' + LU() }) : '';
   }
   function renderTable() {
-    $('#resCaption').textContent = (state.result || 'Result') + (limitsTxt() !== 'none' ? ' · limits ' + limitsTxt() : '');
+    $('#resCaption').textContent = (state.result || t('Result')) + (limitsTxt() ? ' · ' + t('limits {x}', { x: limitsTxt() }) : '');
     $('#resTable').innerHTML = resultTableHtml();
   }
   function resultTableHtml() {
     const cs = results;
     const lo = cs[0].lsl, hi = cs[0].usl;
     const cls = v => ((isFinite(lo) && v < lo - 1e-12) || (isFinite(hi) && v > hi + 1e-12)) ? ' class="bad"' : '';
-    const head = '<tr><th scope="col"><span class="sr">Metric, </span>' + LU() + '</th>' + cs.map(x => '<th scope="col">' + tempTxt(x.T) + '</th>').join('') + '</tr>';
-    const tr = (label, f, sep) => '<tr' + (sep ? ' class="sep"' : '') + '><td>' + label + '</td>' + cs.map(f).join('') + '</tr>';
+    const head = '<tr><th scope="col"><span class="sr">' + t('Metric') + ', </span>' + LU() + '</th>' + cs.map(x => '<th scope="col">' + tempTxt(x.T) + '</th>').join('') + '</tr>';
+    const tr = (label, f, sep) => '<tr' + (sep ? ' class="sep"' : '') + '><td>' + t(label) + '</td>' + cs.map(f).join('') + '</tr>';
     const v = (x, d) => '<td' + cls(x) + '>' + fmtL(x, d) + '</td>';
     return head +
       tr('Status', x => { const s = status(x); return '<td><span class="pill ' + s[0] + '">' + s[1] + '</span></td>'; }) +
@@ -1086,7 +1100,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   }
   function histMarkup(x) {
     const s = x.mc.samples;
-    if (!s || !s.length || !(x.mc.sd > 0)) return '<text x="240" y="125" text-anchor="middle" class="h-tick">Add contributors with a tolerance to see the distribution</text>';
+    if (!s || !s.length || !(x.mc.sd > 0)) return '<text x="240" y="125" text-anchor="middle" class="h-tick">' + t('Add contributors with a tolerance to see the distribution') + '</text>';
     const W = 480, H = 250, ml = 10, mr = 10, mt = 26, axisY = 168;
     let lo = Math.min(x.mc.qLo, x.wcLo), hi = Math.max(x.mc.qHi, x.wcHi);
     if (isFinite(x.lsl)) lo = Math.min(lo, x.lsl);
@@ -1131,7 +1145,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
         '<text class="h-br-lab ' + k + '" x="' + ((x1 + x2) / 2) + '" y="' + (y - 6) + '" text-anchor="middle">' + label + '</text>';
     };
     g += bracket(x.rssLo, x.rssHi, 208, 'RSS ' + fmtL(x.rssLo, 3) + ' … ' + fmtL(x.rssHi, 3), 'rss');
-    g += bracket(x.wcLo, x.wcHi, 240, 'Worst case ' + fmtL(x.wcLo, 3) + ' … ' + fmtL(x.wcHi, 3) + ' ' + LU(), 'wc');
+    g += bracket(x.wcLo, x.wcHi, 240, t('Worst case') + ' ' + fmtL(x.wcLo, 3) + ' … ' + fmtL(x.wcHi, 3) + ' ' + LU(), 'wc');
     return g;
   }
 
@@ -1139,9 +1153,9 @@ details.panel[open] > summary { margin-bottom: 12px; }
   function paretoHtml() {
     const ref = results[1];
     const items = state.rows.map((r, i) => ({ r, i, m: ref.models[i] })).filter(o => !o.m.err).sort((a, b) => b.m.varShare - a.m.varShare);
-    if (!items.length) return '<p class="hint">No valid contributors yet.</p>';
+    if (!items.length) return '<p class="hint">' + t('No valid contributors yet.') + '</p>';
     return items.map(o =>
-      '<div class="par-row"><span class="par-name"><span class="mono">' + (o.i + 1) + '</span>' + esc(o.r.label || TYPE_NAME[o.r.type]) + '</span>' +
+      '<div class="par-row"><span class="par-name"><span class="mono">' + (o.i + 1) + '</span>' + esc(o.r.label || typeName(o.r.type)) + '</span>' +
       '<span class="par-num">' + pct(o.m.varShare) + ' · ' + pct(o.m.wcShare) + '</span>' +
       '<div class="par-track"><div class="par-fill" style="width:' + (o.m.varShare * 100).toFixed(2) + '%"></div></div></div>'
     ).join('');
@@ -1182,11 +1196,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
     let g = '<line class="ch-guide" x1="' + X(0).toFixed(1) + '" x2="' + X(0).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
     if (n && !equal) g += '<line class="ch-guide" x1="' + X(end).toFixed(1) + '" x2="' + X(end).toFixed(1) + '" y1="' + top + '" y2="' + (H - 6) + '"/>';
     segs.forEach(s => {
-      const y = top + s.i * rh + rh / 2, name = s.r.label || TYPE_NAME[s.r.type];
-      g += '<g class="ch-row" data-id="' + s.r.id + '" tabindex="0" role="button" aria-label="' + esc(name) + ': go to contributor">';
+      const y = top + s.i * rh + rh / 2, name = s.r.label || typeName(s.r.type);
+      g += '<g class="ch-row" data-id="' + s.r.id + '" tabindex="0" role="button" aria-label="' + esc(t('{name}: go to contributor', { name })) + '">';
       g += '<rect class="ch-hit" x="0" y="' + (y - rh / 2) + '" width="' + W + '" height="' + rh + '" rx="3"/>';
       g += '<text class="ch-lab" x="4" y="' + (y + 4) + '">' + (s.i + 1) + '  ' + esc(trunc(name, 27)) + '</text>';
-      if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">check input</text></g>'; return; }
+      if (s.m.err) { g += '<text class="ch-err" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + t('check input') + '</text></g>'; return; }
       g += '<text class="ch-val" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + (Math.abs(s.m.m) < 5e-5 ? '±' + fmtL(s.m.h, 3) : fmtSL(s.m.m, 3)) + '</text>';
       const col = heat(s.m.varShare), xa = X(s.a), xb = X(s.b), bw = band(s.m.h);
       const tip = Math.abs(xb - xa) < 3 ? xa : xb;
@@ -1196,7 +1210,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       g += '</g>';
     });
     const y = top + n * rh + rh / 2 + 4;
-    g += '<text class="ch-res-lab" x="4" y="' + (y + 4) + '">Result' + (equal ? ' (schematic)' : '') + '</text>';
+    g += '<text class="ch-res-lab" x="4" y="' + (y + 4) + '">' + t(equal ? 'Result (schematic)' : 'Result') + '</text>';
     g += '<text class="ch-res-lab" x="' + (labW - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + fmtL(ref.nominal, 4) + ' ' + LU() + '</text>';
     // true scale closes the loop; equal steps only shows the result's sign, one step long
     const rEnd = equal ? (Math.abs(ref.nominal) < 5e-5 ? 0 : Math.sign(ref.nominal)) : end;
@@ -1218,12 +1232,12 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const i = state.rows.findIndex(r => r.id === +id);
     if (i < 0) return '';
     const r = state.rows[i], m = results[1].models[i];
-    if (m.err) return '<b>' + esc(r.label) + '</b><span class="err">' + esc(m.err) + '</span>';
-    return '<b>' + (i + 1) + ' · ' + esc(r.label || TYPE_NAME[r.type]) + '</b>' +
-      '<span>' + TYPE_NAME[r.type] + ' · ' + (+r.dir < 0 ? 'subtracts' : 'adds') + (E.num(r.k, 1) !== 1 ? ' × ' + E.num(r.k, 1) : '') + '</span>' +
+    if (m.err) return '<b>' + esc(r.label) + '</b><span class="err">' + esc(errTxt(m)) + '</span>';
+    return '<b>' + (i + 1) + ' · ' + esc(r.label || typeName(r.type)) + '</b>' +
+      '<span>' + esc(typeName(r.type)) + ' · ' + t(+r.dir < 0 ? 'subtracts' : 'adds') + (E.num(r.k, 1) !== 1 ? ' × ' + E.num(r.k, 1) : '') + '</span>' +
       (specTxt(r, m) ? '<span>' + esc(specTxt(r, m)) + '</span>' : '') +
       '<span class="mono">' + (fmtSL(m.m) || fmtL(0)) + ' ± ' + fmtL(m.h) + ' ' + LU() + '</span>' +
-      '<span>' + pct(m.varShare) + ' of variance · ' + pct(m.wcShare) + ' of worst case</span>';
+      '<span>' + t('{a} of variance · {b} of worst case', { a: pct(m.varShare), b: pct(m.wcShare) }) + '</span>';
   }
   const chainSvgEl = $('#chainSvg'), tipEl = $('#chainTip');
   function showTip(g, cx, cy) {
@@ -1278,42 +1292,42 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (!results) compute();
     const [c, ref, h] = results, u = LU();
     const meta = [
-      ['Date', localStamp(true)], ['Revision', state.rev || '—'], ['Author', state.author || '—'],
-      ['Limits', limitsTxt()], ['Ambient', tempTxt(c.T) + ' to ' + tempTxt(h.T) + ', reference ' + tempTxt(20)],
-      ['Monte Carlo', ref.mc.n.toLocaleString('en-US') + ' runs per temperature'], ['Units', imp() ? 'inch, °F' : 'mm, °C']
+      [t('Date'), localStamp(true)], [t('Revision'), state.rev || '—'], [t('Author'), state.author || '—'],
+      [t('Limits'), limitsTxt() || t('none')], [t('Ambient'), t('{a} to {b}, reference {r}', { a: tempTxt(c.T), b: tempTxt(h.T), r: tempTxt(20) })],
+      ['Monte Carlo', t('{n} runs per temperature', { n: group(ref.mc.n) })], [t('Units'), imp() ? 'inch, °F' : 'mm, °C']
     ];
     const summary = results.map(x => {
       const st = status(x);
-      return '<div class="rp-case"><span>Ambient ' + tempTxt(x.T) + '</span><div><span class="pill ' + st[0] + '">' + st[1] + '</span></div>' +
-        '<span>Worst case <b>' + fmtL(x.wcLo) + ' … ' + fmtL(x.wcHi) + '</b></span>' +
+      return '<div class="rp-case"><span>' + t('Ambient {T}', { T: tempTxt(x.T) }) + '</span><div><span class="pill ' + st[0] + '">' + st[1] + '</span></div>' +
+        '<span>' + t('Worst case') + ' <b>' + fmtL(x.wcLo) + ' … ' + fmtL(x.wcHi) + '</b></span>' +
         '<span>RSS <b>' + fmtL(x.rssLo) + ' … ' + fmtL(x.rssHi) + '</b></span>' +
-        '<span>Out of limits <b>' + ppm(x.mc.below + x.mc.above, x.mc.n) + '</b> · Cpk <b>' + (isFinite(x.cpk) ? x.cpk.toFixed(2) : '—') + '</b></span></div>';
+        '<span>' + t('Out of limits') + ' <b>' + ppm(x.mc.below + x.mc.above, x.mc.n) + '</b> · Cpk <b>' + (isFinite(x.cpk) ? x.cpk.toFixed(2) : '—') + '</b></span></div>';
     }).join('');
     const rows = state.rows.map((r, i) => {
       const m = ref.models[i];
-      return '<tr><td class="n">' + (i + 1) + '</td><td>' + esc(r.label || TYPE_NAME[r.type]) + '</td><td>' + TYPE_NAME[r.type] + '</td>' +
+      return '<tr><td class="n">' + (i + 1) + '</td><td>' + esc(r.label || typeName(r.type)) + '</td><td>' + esc(typeName(r.type)) + '</td>' +
         '<td class="n">' + (+r.dir < 0 ? '−' : '+') + (E.num(r.k, 1) !== 1 ? ' ×' + E.num(r.k, 1) : '') + '</td>' +
-        '<td>' + (m.err ? '<span style="color:var(--bad)">' + esc(m.err) + '</span>' : esc(specTxt(r, m))) + '</td>' +
+        '<td>' + (m.err ? '<span style="color:var(--bad)">' + esc(errTxt(m)) + '</span>' : esc(specTxt(r, m))) + '</td>' +
         '<td>' + esc(materialTxt(r)) + '</td><td>' + esc(DIST_NAME(r.dist)) + '</td>' +
         '<td class="n">' + (m.err ? '' : fmtSL(m.m) || fmtL(0)) + '</td><td class="n">' + (m.err ? '' : '±' + fmtL(m.h)) + '</td>' +
         '<td class="n">' + (m.err ? '' : pct(m.varShare)) + '</td></tr>';
     }).join('');
     const ch = chainMarkup(state.chain === 'scale' ? 'scale' : 'equal');
-    const hist = x => '<div class="rp-keep"><h3>Ambient ' + tempTxt(x.T) + '</h3><svg viewBox="0 0 480 250" role="img" aria-label="Histogram at ' + tempTxt(x.T) + '">' + histMarkup(x) + '</svg></div>';
+    const hist = x => '<div class="rp-keep"><h3>' + t('Ambient {T}', { T: tempTxt(x.T) }) + '</h3><svg viewBox="0 0 480 250" role="img" aria-label="' + esc(t('Histogram at {T}', { T: tempTxt(x.T) })) + '">' + histMarkup(x) + '</svg></div>';
     $('#report').innerHTML =
-      '<header class="rp-head"><div><div class="rp-kicker">Tolerance stack-up report</div><h1>' + esc(state.name || 'Untitled stack') + '</h1><p>' + esc(state.result || '') + '</p></div>' +
+      '<header class="rp-head"><div><div class="rp-kicker">' + t('Tolerance stack-up report') + '</div><h1>' + esc(state.name || t('Untitled stack')) + '</h1><p>' + esc(state.result || '') + '</p></div>' +
       '<table class="rp-meta">' + meta.map(([k, v]) => '<tr><th>' + k + '</th><td>' + esc(v) + '</td></tr>').join('') + '</table></header>' +
-      '<section class="rp-sec rp-keep"><h2>Summary</h2><div class="rp-summary">' + summary + '</div></section>' +
-      '<section class="rp-sec"><h2>1 · Contributors</h2><table class="rp-table"><thead><tr><th class="n">#</th><th>Contributor</th><th>Type</th><th class="n">Dir.</th><th>Specification</th><th>Material</th><th>Distribution</th>' +
-        '<th class="n">Mean (' + u + ')</th><th class="n">Range (' + u + ')</th><th class="n">Var.</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        '<p class="hint">Mean and range at ' + tempTxt(20) + '. Var. is the share of result variance from Monte Carlo.</p></section>' +
-      '<section class="rp-sec rp-keep"><h2>2 · Dimension chain at ' + tempTxt(20) + (state.chain === 'scale' ? ', true scale' : ', equal steps') + '</h2><svg viewBox="' + ch.vb + '" role="img" aria-label="Dimension chain">' + ch.g + '</svg>' +
-        '<div class="ch-legend"><span>Arrows right add, left subtract · band = ± tolerance · circle = zero nominal</span><span>Colour: share of variance</span><span>low</span><span class="ch-ramp"></span><span>high</span></div></section>' +
-      '<section class="rp-sec rp-keep"><h2>3 · Results</h2><table class="res-table">' + resultTableHtml() + '</table></section>' +
-      '<section class="rp-sec"><h2>4 · Variation distribution and contribution</h2><div class="rp-grid">' + hist(c) + hist(ref) + hist(h) +
-        '<div class="rp-keep"><h3>Contribution at ' + tempTxt(20) + ' · variance · worst case</h3><div class="par">' + paretoHtml() + '</div></div></div></section>' +
-      '<section class="rp-sec"><h2>5 · Method</h2><dl class="notes">' + $('#methodNotes').innerHTML + '</dl></section>' +
-      '<footer class="rp-foot"><span>Tolerance Chain Calculator · ehcrea.github.io/tolerance-chain-calculator</span><span>' + esc(state.name || '') + (state.rev ? ' · rev ' + esc(state.rev) : '') + ' · ' + localStamp() + '</span></footer>';
+      '<section class="rp-sec rp-keep"><h2>' + t('Summary') + '</h2><div class="rp-summary">' + summary + '</div></section>' +
+      '<section class="rp-sec"><h2>1 · ' + t('Contributors') + '</h2><table class="rp-table"><thead><tr><th class="n">#</th><th>' + t('Contributor') + '</th><th>' + t('Type') + '</th><th class="n">' + t('Dir.') + '</th><th>' + t('Specification') + '</th><th>' + t('Material') + '</th><th>' + t('Distribution') + '</th>' +
+        '<th class="n">' + t('Mean ({u})', { u }) + '</th><th class="n">' + t('Range ({u})', { u }) + '</th><th class="n">' + t('Var.') + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p class="hint">' + t('Mean and range at {T}. Var. is the share of result variance from Monte Carlo.', { T: tempTxt(20) }) + '</p></section>' +
+      '<section class="rp-sec rp-keep"><h2>2 · ' + t(state.chain === 'scale' ? 'Dimension chain at {T}, true scale' : 'Dimension chain at {T}, equal steps', { T: tempTxt(20) }) + '</h2><svg viewBox="' + ch.vb + '" role="img" aria-label="' + esc(t('Dimension chain')) + '">' + ch.g + '</svg>' +
+        '<div class="ch-legend"><span>' + t('Arrows right add, left subtract · band = ± tolerance · circle = zero nominal') + '</span><span>' + t('Colour: share of variance') + '</span><span>' + t('low') + '</span><span class="ch-ramp"></span><span>' + t('high') + '</span></div></section>' +
+      '<section class="rp-sec rp-keep"><h2>3 · ' + t('Results') + '</h2><table class="res-table">' + resultTableHtml() + '</table></section>' +
+      '<section class="rp-sec"><h2>4 · ' + t('Variation distribution and contribution') + '</h2><div class="rp-grid">' + hist(c) + hist(ref) + hist(h) +
+        '<div class="rp-keep"><h3>' + t('Contribution at {T} · variance · worst case', { T: tempTxt(20) }) + '</h3><div class="par">' + paretoHtml() + '</div></div></div></section>' +
+      '<section class="rp-sec"><h2>5 · ' + t('Method') + '</h2><dl class="notes">' + $('#methodNotes').innerHTML.replace(/ data-i18n(-html)?/g, '') + '</dl></section>' +
+      '<footer class="rp-foot"><span>' + t('Tolerance Chain Calculator') + ' · ehcrea.github.io/tolerance-chain-calculator</span><span>' + esc(state.name || '') + (state.rev ? ' · ' + t('rev') + ' ' + esc(state.rev) : '') + ' · ' + localStamp() + '</span></footer>';
   }
   $('#pdfReport').addEventListener('click', () => {
     renderReport();
@@ -1322,6 +1336,22 @@ details.panel[open] > summary { margin-bottom: 12px; }
   // also covers ⌘P / Ctrl+P
   window.addEventListener('beforeprint', renderReport);
 
+  // language: static markup via data-i18n, everything else re-rendered
+  const langSel = $('#langSelect');
+  langSel.innerHTML = I18N.LANGS.map(l => '<option value="' + l.code + '" lang="' + l.code + '">' + l.name + '</option>').join('');
+  function applyLang() {
+    I18N.apply();
+    langSel.value = I18N.lang();
+    document.title = t('Tolerance Chain Calculator');
+    if (!newArmed) $('#newStack').textContent = t('New stack');
+  }
+  langSel.addEventListener('change', () => {
+    I18N.setLang(langSel.value, true);
+    applyLang();
+    renderAll();
+  });
+
+  applyLang();
   state = load();
   renderAll();
 })();
