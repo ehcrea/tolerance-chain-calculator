@@ -6,6 +6,13 @@
 <title>Tolerance Chain Calculator</title>
 <meta name="description" content="Free 1D tolerance stack-up calculator with ISO 286 fits, ISO 2768-1, thermal expansion, angular deviations and play. Worst case, RSS and Monte Carlo.">
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Tolerance Chain">
+<meta name="theme-color" content="#edf0ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101615" media="(prefers-color-scheme: dark)">
 <script>
   // apply the saved theme before first paint; with none saved the system setting applies
   try { const t = localStorage.getItem('tcc.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) { /* storage unavailable */ }
