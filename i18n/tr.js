@@ -392,5 +392,13 @@ I18N.add('tr', {
   "Total side clearance between PCB edges and housing walls": "Kart kenarları ile kutu duvarları arasındaki toplam yan boşluk",
   "Housing: inner width (moulded)": "Kutu: iç genişlik (enjeksiyon)",
   "PCB width (routed FR4, α 16)": "Kart genişliği (frezelenmiş FR4, α 16)",
-  "Housing wall warpage": "Kutu duvarı çarpılması"
+  "Housing wall warpage": "Kutu duvarı çarpılması",
+  // assembly view
+  "Assembly view": "Montaj görünümü",
+  "2D section": "2B kesit",
+  "3D isometric": "3B izometrik",
+  "View": "Görünüm",
+  "Schematic assembly view of the example. Select a numbered balloon to go to its contributor.": "Örneğin şematik montaj görünümü. Zincir elemanına gitmek için numaralı balonu seçin.",
+  "Schematic, not to scale. Numbers match the contributors; orange marks the result.": "Şematik, ölçekli değil. Numaralar zincir elemanlarıyla eşleşir; turuncu sonucu gösterir.",
+  "Assembly view (schematic)": "Montaj görünümü (şematik)"
 });

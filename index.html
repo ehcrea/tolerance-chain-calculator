@@ -169,6 +169,24 @@ select.btn { padding-right: 8px; }
 @media (prefers-reduced-motion: reduce) { .row.flash { animation: none; outline: 3px solid var(--heat); } }
 .ch-err { fill: var(--bad); font-family: var(--font-body); font-size: 11px; }
 
+/* assembly view */
+#pvSvg { display: block; width: 100%; height: auto; max-height: 420px; }
+.pv-hl { stroke: var(--ink); stroke-opacity: 0.4; stroke-width: 0.8; }
+.pv-o { stroke: var(--ink); stroke-width: 1; stroke-linejoin: round; }
+.pv-beyond { stroke-opacity: 0.5; }
+.pv-edge { stroke: var(--ink); stroke-opacity: 0.55; stroke-width: 0.8; stroke-linejoin: round; }
+.pv-axis { stroke: var(--muted); stroke-width: 0.9; stroke-dasharray: 14 3 2 3; fill: none; }
+.pv-res { stroke: var(--heat); stroke-width: 1.2; fill: none; }
+.pv-res-f { fill: var(--heat); }
+.pv-res-t { fill: var(--heat); font-family: var(--font-display); font-weight: 600; font-size: 12.5px; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; }
+.pv-tag { cursor: pointer; outline: none; }
+.pv-lead { stroke: var(--ink); stroke-width: 0.9; }
+.pv-dot { fill: var(--ink); }
+.pv-ball { fill: var(--panel); stroke: var(--ink); stroke-width: 1.2; }
+.pv-num { fill: var(--ink); font-family: var(--font-mono); font-size: 11px; }
+.pv-tag:hover .pv-ball, .pv-tag:focus-visible .pv-ball { fill: var(--accent); stroke: var(--accent); }
+.pv-tag:hover .pv-num, .pv-tag:focus-visible .pv-num { fill: var(--accent-ink); }
+
 /* results */
 .res-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 #toast[hidden], #toastUndo[hidden] { display: none; }
@@ -338,6 +356,14 @@ details.panel[open] > summary { margin-bottom: 12px; }
         </div>
       </div>
 
+      <div class="panel" id="pvPanel" hidden>
+        <div class="panel-head"><h2 data-i18n>Assembly view</h2>
+          <div class="tabs" id="pvMode" role="group" aria-label="View" data-i18n-attr="aria-label"><button type="button" data-pv="2d" aria-pressed="false" data-i18n>2D section</button><button type="button" data-pv="iso" aria-pressed="true" data-i18n>3D isometric</button></div>
+        </div>
+        <svg id="pvSvg" role="img" aria-label="Schematic assembly view of the example. Select a numbered balloon to go to its contributor." data-i18n-attr="aria-label"></svg>
+        <div class="ch-legend"><span data-i18n>Schematic, not to scale. Numbers match the contributors; orange marks the result.</span></div>
+      </div>
+
       <div class="panel">
         <div class="panel-head"><h2><span data-i18n>Chain at</span> <span data-ref-temp>20 °C</span></h2>
           <div class="tabs" id="chainMode" role="group" aria-label="Arrow lengths" data-i18n-attr="aria-label"><button type="button" data-chain="equal" aria-pressed="true" data-i18n>Equal steps</button><button type="button" data-chain="scale" aria-pressed="false" data-i18n>True scale</button></div>
@@ -414,6 +440,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
 <div id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" id="toastUndo" data-i18n>Undo</button></div>
 
 <script src="engine.js" charset="utf-8"></script>
+<script src="preview.js" charset="utf-8"></script>
 <script src="i18n.js" charset="utf-8"></script>
 <script src="i18n/de.js" charset="utf-8"></script>
 <script src="i18n/nl.js" charset="utf-8"></script>
@@ -528,6 +555,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
       ]
     })
   };
+  // example rows carry pv, their index in the example, so balloons survive reordering
+  function exampleState(k) {
+    const o = EXAMPLES[k]();
+    o.example = k;
+    o.rows.forEach((r, i) => { r.pv = i; });
+    return o;
+  }
   function blank() {
     return { name: t('New stack'), result: t(''), lsl: '', usl: '', tCold: '20', tHot: '20', n: '100000', rows: [mk('lin', { label: t('Dimension A') }), mk('lin', { label: t('Dimension B'), dir: -1, nom: '9.8' })] };
   }
@@ -632,13 +666,14 @@ details.panel[open] > summary { margin-bottom: 12px; }
       name: o.name ?? b.name, result: o.result ?? '', lsl: o.lsl ?? '', usl: o.usl ?? '', tCold: o.tCold ?? '20', tHot: o.tHot ?? '20', n: String(o.n ?? '100000'),
       units: o.units === 'imp' ? 'imp' : (o.units === 'si' ? 'si' : (state && state.units) || 'si'),
       chain: o.chain === 'scale' ? 'scale' : 'equal',
+      view: o.view === '2d' ? '2d' : 'iso', example: Preview.has(o.example) ? o.example : '',
       author: o.author ?? '', rev: o.rev ?? '',
       rows
     };
   }
   function load() {
     try { const raw = localStorage.getItem(KEY); if (raw) return normalize(JSON.parse(raw)); } catch (e) { /* fall through */ }
-    return normalize(EXAMPLES.bearing());
+    return normalize(exampleState('bearing'));
   }
   function replaceState(next, msg) {
     undoState = JSON.stringify(state);
@@ -770,7 +805,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (act === 'dir') state.rows[i].dir = +state.rows[i].dir < 0 ? 1 : -1;
     else if (act === 'up' && i > 0) state.rows.splice(i - 1, 0, state.rows.splice(i, 1)[0]);
     else if (act === 'down' && i < state.rows.length - 1) state.rows.splice(i + 1, 0, state.rows.splice(i, 1)[0]);
-    else if (act === 'dup') state.rows.splice(i + 1, 0, Object.assign({}, state.rows[i], { id: nextId++, label: t('{name} (copy)', { name: state.rows[i].label }) }));
+    else if (act === 'dup') state.rows.splice(i + 1, 0, Object.assign({}, state.rows[i], { id: nextId++, pv: undefined, label: t('{name} (copy)', { name: state.rows[i].label }) }));
     else if (act === 'del') {
       undoState = JSON.stringify(state);
       const gone = state.rows.splice(i, 1)[0];
@@ -797,7 +832,9 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const next = dark ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem('tcc.theme', next); } catch (e) { /* storage unavailable */ }
+    renderPreview();
   });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderPreview());
   $('#unitTabs').addEventListener('click', e => {
     const b = e.target.closest('[data-units]');
     if (!b || b.dataset.units === state.units) return;
@@ -807,7 +844,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   $('#example').addEventListener('change', e => {
     const k = e.target.value;
     e.target.value = '';
-    if (EXAMPLES[k]) replaceState(EXAMPLES[k](), t('Loaded example: {name}', { name: e.target.querySelector('[value="' + k + '"]').textContent }));
+    if (EXAMPLES[k]) replaceState(exampleState(k), t('Loaded example: {name}', { name: e.target.querySelector('[value="' + k + '"]').textContent }));
   });
   $('#newStack').addEventListener('click', () => {
     const b = $('#newStack');
@@ -1012,6 +1049,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     renderHist();
     renderPareto();
     renderChain();
+    renderPreview();
     save();
   }
 
@@ -1294,6 +1332,43 @@ details.panel[open] > summary { margin-bottom: 12px; }
     save();
   });
 
+  /* ---------- assembly view of the loaded example ---------- */
+  function previewMarkup(view, dark, pfx, interactive) {
+    const tags = {};
+    state.rows.forEach((r, i) => {
+      if (r.pv == null || tags[r.pv]) return;
+      const name = r.label || typeName(r.type);
+      tags[r.pv] = { id: r.id, num: i + 1, title: esc((i + 1) + ' · ' + name), aria: esc(t('{name}: go to contributor', { name })) };
+    });
+    return Preview.markup(state.example, view, { dark, pfx, interactive, tags, resLabel: esc(t('Result')) });
+  }
+  function isDark() {
+    const th = document.documentElement.dataset.theme;
+    return th ? th === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function renderPreview() {
+    const on = !!(state && state.example);
+    $('#pvPanel').hidden = !on;
+    if (!on) return;
+    const view = state.view === '2d' ? '2d' : 'iso', m = previewMarkup(view, isDark(), 'pv', true), svg = $('#pvSvg');
+    svg.setAttribute('viewBox', m.vb);
+    svg.innerHTML = m.g;
+    document.querySelectorAll('[data-pv]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pv === view)));
+  }
+  $('#pvMode').addEventListener('click', e => {
+    const b = e.target.closest('[data-pv]');
+    if (!b) return;
+    state.view = b.dataset.pv;
+    renderPreview();
+    save();
+  });
+  $('#pvSvg').addEventListener('click', e => { const g = e.target.closest('.pv-tag'); if (g) goToCard(g.dataset.id); });
+  $('#pvSvg').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const g = e.target.closest('.pv-tag');
+    if (g) { e.preventDefault(); goToCard(g.dataset.id); }
+  });
+
   /* ---------- PDF report: a print-styled page; the browser's print dialog saves it as PDF ---------- */
   function renderReport() {
     if (!results) compute();
@@ -1325,6 +1400,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       '<header class="rp-head"><div><div class="rp-kicker">' + t('Tolerance stack-up report') + '</div><h1>' + esc(state.name || t('Untitled stack')) + '</h1><p>' + esc(state.result || '') + '</p></div>' +
       '<table class="rp-meta">' + meta.map(([k, v]) => '<tr><th>' + k + '</th><td>' + esc(v) + '</td></tr>').join('') + '</table></header>' +
       '<section class="rp-sec rp-keep"><h2>' + t('Summary') + '</h2><div class="rp-summary">' + summary + '</div></section>' +
+      (state.example ? '<section class="rp-sec rp-keep"><h2>' + t('Assembly view (schematic)') + '</h2><div class="rp-grid">' + [['2d', '2D section'], ['iso', '3D isometric']].map(([v, h], i) => { const m = previewMarkup(v, false, 'rp' + i, false); return '<div><h3>' + t(h) + '</h3><svg viewBox="' + m.vb + '" role="img" aria-label="' + esc(t(h)) + '">' + m.g + '</svg></div>'; }).join('') + '</div></section>' : '') +
       '<section class="rp-sec"><h2>1 · ' + t('Contributors') + '</h2><table class="rp-table"><thead><tr><th class="n">#</th><th>' + t('Contributor') + '</th><th>' + t('Type') + '</th><th class="n">' + t('Dir.') + '</th><th>' + t('Specification') + '</th><th>' + t('Material') + '</th><th>' + t('Distribution') + '</th>' +
         '<th class="n">' + t('Mean ({u})', { u }) + '</th><th class="n">' + t('Range ({u})', { u }) + '</th><th class="n">' + t('Var.') + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<p class="hint">' + t('Mean and range at {T}. Var. is the share of result variance from Monte Carlo.', { T: tempTxt(20) }) + '</p></section>' +

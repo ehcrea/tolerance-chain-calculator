@@ -392,5 +392,13 @@ I18N.add('nl', {
   "Total side clearance between PCB edges and housing walls": "Totale zijspeling tussen printplaatranden en behuizingswanden",
   "Housing: inner width (moulded)": "Behuizing: binnenbreedte (gespoten)",
   "PCB width (routed FR4, α 16)": "Breedte printplaat (gefreesd FR4, α 16)",
-  "Housing wall warpage": "Kromtrekken behuizingswand"
+  "Housing wall warpage": "Kromtrekken behuizingswand",
+  // assembly view
+  "Assembly view": "Samenstellingsaanzicht",
+  "2D section": "2D-doorsnede",
+  "3D isometric": "3D-isometrisch",
+  "View": "Weergave",
+  "Schematic assembly view of the example. Select a numbered balloon to go to its contributor.": "Schematisch samenstellingsaanzicht van het voorbeeld. Kies een positienummer om naar de schakel te gaan.",
+  "Schematic, not to scale. Numbers match the contributors; orange marks the result.": "Schematisch, niet op schaal. De nummers komen overeen met de schakels; oranje markeert het resultaat.",
+  "Assembly view (schematic)": "Samenstellingsaanzicht (schematisch)"
 });

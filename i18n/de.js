@@ -392,5 +392,13 @@ I18N.add('de', {
   "Total side clearance between PCB edges and housing walls": "Gesamtes seitliches Spiel zwischen Leiterplattenrändern und Gehäusewänden",
   "Housing: inner width (moulded)": "Gehäuse: Innenbreite (gespritzt)",
   "PCB width (routed FR4, α 16)": "Leiterplattenbreite (gefräst, FR4, α 16)",
-  "Housing wall warpage": "Verzug der Gehäusewand"
+  "Housing wall warpage": "Verzug der Gehäusewand",
+  // assembly view
+  "Assembly view": "Baugruppenansicht",
+  "2D section": "2D-Schnitt",
+  "3D isometric": "3D-Isometrie",
+  "View": "Ansicht",
+  "Schematic assembly view of the example. Select a numbered balloon to go to its contributor.": "Schematische Baugruppenansicht des Beispiels. Positionsnummer wählen, um zum Kettenglied zu springen.",
+  "Schematic, not to scale. Numbers match the contributors; orange marks the result.": "Schematisch, nicht maßstäblich. Die Nummern entsprechen den Kettengliedern; Orange markiert das Ergebnis.",
+  "Assembly view (schematic)": "Baugruppenansicht (schematisch)"
 });
