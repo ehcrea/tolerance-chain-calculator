@@ -338,6 +338,16 @@ details.panel[open] > summary { margin-bottom: 12px; }
           <option value="bearing" data-i18n>Bearing cover axial gap</option>
           <option value="circlip" data-i18n>Retaining ring (DIN 471) axial play</option>
           <option value="gear" data-i18n>Gear centre distance with bearing play</option>
+          <option value="seat" data-i18n>Bearing seat in aluminium housing</option>
+        </optgroup>
+        <optgroup label="Sealing and housings" data-i18n-attr="label">
+          <option value="oring" data-i18n>O-ring face seal squeeze</option>
+          <option value="gap" data-i18n>Housing parting line gap</option>
+        </optgroup>
+        <optgroup label="Electronics and batteries" data-i18n-attr="label">
+          <option value="tpad" data-i18n>Thermal pad under heatsink</option>
+          <option value="mezz" data-i18n>Board-to-board connector engagement</option>
+          <option value="battery" data-i18n>Battery module cell stack</option>
         </optgroup>
         <optgroup label="Sheet metal" data-i18n-attr="label">
           <option value="sheet" data-i18n>Bent bracket to enclosure lid</option>
@@ -593,6 +603,60 @@ details.panel[open] > summary { margin-bottom: 12px; }
         mk('lin', { label: t('Housing: inner width (moulded)'), nom: '80', up: '0.15', lo: '-0.15', mat: 'pa66gf' }),
         mk('lin', { label: t('PCB width (routed FR4, α 16)'), dir: -1, nom: '79.6', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '16' }),
         mk('lin', { label: t('Housing wall warpage'), nom: '0', up: '0', lo: '-0.15', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    seat: () => ({
+      name: t('Bearing seat in aluminium housing'), result: t('Diametral clearance (+) or interference (−) of the bearing outer ring in its seat'), lsl: '-0.060', usl: '0.025', tCold: '-40', tHot: '80', n: '100000',
+      rows: [
+        mk('lin', { label: t('Housing bore Ø47 M7'), nom: '47', tolMode: 'iso286', iso: 'M7', mat: 'al' }),
+        mk('lin', { label: t('Bearing 6204 outer ring Ø47 (ISO 492 normal), runs 10 °C warm'), dir: -1, nom: '47', up: '0', lo: '-0.011', mat: 'bearing', dT: '10' }),
+        mk('lin', { label: t('Bore roundness, reduces the fit'), nom: '0', up: '0', lo: '-0.008', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    oring: () => ({
+      name: t('O-ring face seal squeeze'), result: t('O-ring squeeze; limits are 15 to 30 % of the 3.53 mm cross-section'), lsl: '0.53', usl: '1.06', tCold: '-30', tHot: '120', n: '100000',
+      rows: [
+        mk('lin', { label: t('O-ring cross-section 3.53 ±0.10 (NBR, α 200)'), nom: '3.53', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '200' }),
+        mk('lin', { label: t('Groove depth 2.70 +0.05'), dir: -1, nom: '2.7', up: '0.05', lo: '0', mat: 'al' }),
+        mk('lin', { label: t('Cover flatness over the seal'), dir: -1, nom: '0', up: '0.05', lo: '0', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    gap: () => ({
+      name: t('Housing parting line gap'), result: t('Visible gap between cover skirt and base wall'), lsl: '0.1', usl: '0.7', tCold: '-20', tHot: '60', n: '100000',
+      rows: [
+        mk('lin', { label: t('Base: locating boss to wall inner face (PC/ABS)'), nom: '40', up: '0.15', lo: '-0.15', mat: 'custom', alpha: '70' }),
+        mk('lin', { label: t('Cover: locating pin to skirt outer face (PC/ABS)'), dir: -1, nom: '39.6', up: '0.15', lo: '-0.15', mat: 'custom', alpha: '70' }),
+        mk('fit', { label: t('Cover pin Ø3 in boss hole'), D: '3', hMode: 'dev', hUp: '0.15', hLo: '0.1', sMode: 'dev', sUp: '0', sLo: '-0.05', hMat: 'custom', hAlpha: '70', sMat: 'custom', sAlpha: '70' }),
+        mk('lin', { label: t('Wall warpage at parting line'), nom: '0', up: '0.1', lo: '-0.1', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    tpad: () => ({
+      name: t('Thermal pad under heatsink'), result: t('Gap filled by a 2.0 mm thermal pad; limits give 10 to 30 % compression'), lsl: '1.40', usl: '1.80', tCold: '-20', tHot: '85', n: '100000',
+      rows: [
+        mk('lin', { label: t('Standoff: PCB top to heatsink face'), nom: '6.1', up: '0.05', lo: '-0.05', mat: 'al' }),
+        mk('lin', { label: t('Component height (datasheet 4.5 ±0.1)'), dir: -1, nom: '4.5', up: '0.1', lo: '-0.1', mat: 'none' }),
+        mk('lin', { label: t('Solder joint height'), dir: -1, nom: '0.05', up: '0.03', lo: '-0.03', mat: 'none' }),
+        mk('lin', { label: t('PCB bow at component (0.75 %)'), nom: '0', up: '0.15', lo: '-0.15', mat: 'none', dist: 'uniform' }),
+        mk('lin', { label: t('Heatsink face flatness'), nom: '0', up: '0.05', lo: '0', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    mezz: () => ({
+      name: t('Board-to-board connector engagement'), result: t('Contact engagement of the mezzanine connector pair'), lsl: '0.8', usl: '2.2', tCold: '-40', tHot: '85', n: '100000',
+      rows: [
+        mk('lin', { label: t('Receptacle height on lower board'), nom: '4', up: '0.1', lo: '-0.1', mat: 'none' }),
+        mk('lin', { label: t('Plug height on upper board'), nom: '5.5', up: '0.1', lo: '-0.1', mat: 'none' }),
+        mk('lin', { label: t('Standoffs: board spacing'), dir: -1, nom: '8', up: '0.05', lo: '-0.05', mat: 'brass' }),
+        mk('lin', { label: t('Solder and seating, 2 connectors'), nom: '0.05', up: '0.03', lo: '-0.03', k: '2', mat: 'none' }),
+        mk('lin', { label: t('Upper board bow at connector'), dir: -1, nom: '0', up: '0.1', lo: '-0.1', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    battery: () => ({
+      name: t('Battery module cell stack'), result: t('Total compression of the 9 foam pads; limits are 10 to 50 % of 13.5 mm'), lsl: '1.35', usl: '6.75', tCold: '-20', tHot: '55', n: '100000',
+      rows: [
+        mk('lin', { label: t('Cells: 10 × 27.0 ±0.15 (factor 10 treats them as one batch)'), nom: '27', up: '0.15', lo: '-0.15', k: '10', mat: 'al' }),
+        mk('lin', { label: t('Foam pads: 9 × 1.5 ±0.15 free height'), nom: '1.5', up: '0.15', lo: '-0.15', k: '9', mat: 'none' }),
+        mk('lin', { label: t('End plates: 2 × 12 ±0.1'), nom: '12', up: '0.1', lo: '-0.1', k: '2', mat: 'al' }),
+        mk('lin', { label: t('Tie rods: distance between nut seats'), dir: -1, nom: '303.5', up: '0.2', lo: '-0.2', mat: 'steel' })
       ]
     })
   };

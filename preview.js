@@ -6,6 +6,7 @@
  *   rev  profile p = [[a, r], ...] revolved about an axis ('x' or 'y') through `at`
  *   ext  polygon p = [[x, y], ...] extruded from z[0] to z[1]
  *   ball n balls of radius br on a pitch circle r at axial position a
+ * half: the 2D view shows only the r >= 0 side of parts on the main axis (full: both sides).
  * m is the material colour, h the 2D hatch (none: shown unsectioned, like shafts and pins).
  * tags [row, x, y, bx, by]: balloon for example row `row`, pointing at (x, y) from (bx, by).
  * res: the measured result, as a dimension {dim: [x0, x1, y, from0, from1]} or a leader
@@ -16,7 +17,8 @@
   // hue, saturation %, lightness % in the light theme
   const MAT = {
     al: [210, 9, 80], alc: [200, 7, 71], steel: [212, 13, 63], brg: [222, 12, 50], ss: [200, 10, 73],
-    pa: [32, 16, 58], pcb: [148, 42, 36], chip: [220, 8, 26], tool: [42, 50, 55], res: [21, 82, 52]
+    pa: [32, 16, 58], pcb: [148, 42, 36], chip: [220, 8, 26], tool: [42, 50, 55], res: [21, 82, 52],
+    rubber: [0, 0, 26], pad: [195, 32, 70], cell: [215, 34, 52], pc: [210, 6, 82], conn: [220, 6, 44], brass: [42, 52, 58]
   };
   const C30 = Math.cos(Math.PI / 6);
   const V = [1, 1, 1];
@@ -40,6 +42,11 @@
     const c = r * Math.cos(th), s = r * Math.sin(th);
     return o.ax === 'y' ? [o.at[0] + c, o.at[1] + a, s] : [o.at[0] + a, o.at[1] + c, s];
   }
+
+  const box = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  // ellipse in (a, r) for a squeezed O-ring section
+  const ell = (a, r, ha, hr) => Array.from({ length: 20 }, (_, i) => [a + ha * Math.sin(i * Math.PI / 10), r + hr * Math.cos(i * Math.PI / 10)]);
+  const range = (n, f) => Array.from({ length: n }, (_, i) => f(i));
 
   const S = {
     bearing: {
@@ -172,6 +179,95 @@
       axes: [[10, -5, 10, 9], [70, -5, 70, 9]],
       tags: [[0, -1.5, 14, -12, 14], [1, 38, 7.2, 36, 18], [2, 81.5, 17, 94, 17]],
       res: { at: [[0.75, 6.8], [79.25, 6.8]], lab: [40, 29] }
+    },
+    seat: {
+      half: true,
+      parts: [
+        { k: 'rev', ax: 'x', at: [0, 0], m: 'steel', p: box(-6, 0, 26, 10) },
+        { k: 'rev', ax: 'x', at: [0, 0], m: 'al', h: 0, p: [[-4, 21], [0, 21], [0, 24], [18, 24], [18, 38], [-4, 38]] },
+        { k: 'rev', ax: 'x', at: [0, 0], m: 'brg', h: 1, p: box(0, 19.5, 14, 23.5) },
+        { k: 'rev', ax: 'x', at: [0, 0], m: 'res', p: box(0, 23.5, 14, 24) },
+        { k: 'rev', ax: 'x', at: [0, 0], m: 'brg', h: 1, p: box(0, 10, 14, 14) },
+        { k: 'ball', ax: 'x', at: [0, 0], m: 'brg', a: 7, r: 16.75, br: 3, n: 5 }
+      ],
+      seg: 3,
+      axes: [[-9, 0, 29, 0]],
+      tags: [[0, 9, 31, 4, 46], [1, 11, 21.5, 25, 15], [2, 16.5, 24, 26, 30]],
+      res: { at: [[7, 23.75]], lab: [20, 47] }
+    },
+    oring: {
+      half: true,
+      parts: [
+        { k: 'rev', ax: 'y', at: [0, 0], m: 'al', h: 0, p: [[0, 10], [0, 40], [12, 40], [12, 32.4], [9.3, 32.4], [9.3, 27.6], [12, 27.6], [12, 10]] },
+        { k: 'rev', ax: 'y', at: [0, 0], m: 'rubber', p: ell(10.65, 30, 1.35, 2.15) },
+        { k: 'rev', ax: 'y', at: [0, 0], m: 'al', h: 1, p: box(12, 10, 18, 40) },
+        { k: 'rev', ax: 'y', at: [36, 0], m: 'steel', full: true, p: [[4, 0], [18, 0], [18, 2.5], [4, 2.5]] },
+        { k: 'rev', ax: 'y', at: [36, 0], m: 'steel', full: true, p: [[18, 0], [21, 0], [21, 4.2], [18, 4.2]] }
+      ],
+      seg: 3,
+      axes: [[36, 1, 36, 24]],
+      tags: [[0, 31.6, 10.65, 47, 11], [1, 28.2, 9.5, 24, -6], [2, 20, 17.5, 16, 28]],
+      res: { at: [[29.5, 11.9]], lab: [29, 29] }
+    },
+    gap: {
+      parts: [
+        { k: 'ext', m: 'pc', h: 0, z: [-30, 0], p: [[-10, 0], [42.5, 0], [42.5, 22.5], [40, 22.5], [40, 2.5], [-10, 2.5]] },
+        { k: 'rev', ax: 'y', at: [0, 0], m: 'pc', h: 0, p: box(2.5, 1.55, 12, 4) },
+        { k: 'ext', m: 'pc', h: 1, z: [-30, 0], p: [[-10, 20], [36.7, 20], [36.7, 13], [39.2, 13], [39.2, 22.5], [-10, 22.5]] },
+        { k: 'rev', ax: 'y', at: [0, 0], m: 'pc', p: box(6, 0, 20, 1.5) },
+        { k: 'ext', m: 'res', z: [-30, 0], p: box(39.2, 13, 40, 22.5) }
+      ],
+      seg: 3,
+      axes: [[0, -3, 0, 25]],
+      tags: [[0, 20, 1.2, 20, -8], [1, 20, 21.2, 20, 32], [2, 0, 9, -16, 9], [3, 41.2, 16, 52, 16]],
+      res: { at: [[39.6, 17]], lab: [44, 31] }
+    },
+    tpad: {
+      parts: [
+        { k: 'ext', m: 'pcb', h: 1, z: [-20, 0], p: box(0, 0, 60, 1.6) },
+        { k: 'ext', m: 'chip', z: [-10, 0], p: box(20, 1.65, 40, 6.15) },
+        { k: 'ext', m: 'res', z: [-10, 0], p: box(20, 6.15, 40, 7.7) },
+        { k: 'rev', ax: 'y', at: [5, 0], m: 'al', h: 2, p: box(1.6, 0, 7.7, 2.5) },
+        { k: 'rev', ax: 'y', at: [55, 0], m: 'al', h: 2, p: box(1.6, 0, 7.7, 2.5) },
+        { k: 'ext', m: 'al', h: 0, z: [-20, 0], p: box(-2, 7.7, 62, 11) }
+      ].concat(range(10, i => ({ k: 'ext', m: 'al', h: 0, z: [-20, 0], p: box(-2 + i * 6.9, 11, -0.2 + i * 6.9, 21) }))),
+      seg: 2,
+      axes: [[5, -2, 5, 9], [55, -2, 55, 9]],
+      tags: [[0, 5, 4.5, -8, 4], [1, 38, 4, 46, 4], [2, 22, 1.63, 13, -6], [3, 8, 0.8, 1, -6], [4, 44, 7.8, 70, 9]],
+      res: { at: [[20.5, 6.9]], lab: [13, 6.2] }
+    },
+    mezz: {
+      parts: [
+        { k: 'ext', m: 'pcb', h: 1, z: [-20, 0], p: box(0, 0, 60, 1.6) },
+        { k: 'ext', m: 'pcb', h: 1, z: [-20, 0], p: box(0, 9.6, 60, 11.2) },
+        { k: 'rev', ax: 'y', at: [5, 0], m: 'brass', h: 2, p: box(1.6, 0, 9.6, 2.5) },
+        { k: 'rev', ax: 'y', at: [55, 0], m: 'brass', h: 2, p: box(1.6, 0, 9.6, 2.5) },
+        { k: 'ext', m: 'conn', h: 0, z: [-8, 0], p: [[20, 1.65], [40, 1.65], [40, 5.65], [37, 5.65], [37, 2.65], [23, 2.65], [23, 5.65], [20, 5.65]] },
+        { k: 'ext', m: 'conn', h: 1, z: [-7, 0], p: box(23.2, 4.05, 36.8, 9.55) },
+        { k: 'ext', m: 'res', z: [-7, 0], p: box(23.2, 4.05, 36.8, 5.65) }
+      ],
+      seg: 2,
+      axes: [[5, -2, 5, 13], [55, -2, 55, 13]],
+      tags: [[0, 21.5, 3.5, 13, 4], [1, 33, 8, 47, 8], [2, 55, 6, 68, 6], [3, 39, 1.63, 50, -6], [4, 10, 10.4, 10, 18]],
+      res: { at: [[30, 4.85]], lab: [30, -7] }
+    },
+    battery: {
+      parts: [
+        { k: 'ext', m: 'al', h: 0, z: [-50, 0], p: box(0, -5, 12, 112) },
+        { k: 'ext', m: 'al', h: 0, z: [-50, 0], p: box(295.5, -5, 307.5, 112) }
+      ].concat(
+        range(10, i => ({ k: 'ext', m: 'cell', h: 1, z: [-46, 0], p: box(12 + i * 28.5, 0, 39 + i * 28.5, 90) })),
+        range(9, i => ({ k: 'ext', m: 'res', z: [-46, 0], p: box(39 + i * 28.5, 0, 40.5 + i * 28.5, 90) })),
+        range(10, i => ({ k: 'ext', m: 'steel', z: [-38, -26], p: box(20 + i * 28.5, 90, 31 + i * 28.5, 95) })),
+        [
+          { k: 'rev', ax: 'x', at: [0, 104], m: 'steel', p: box(-10, 0, 317, 4) },
+          { k: 'rev', ax: 'x', at: [0, 104], m: 'steel', h: 2, p: box(-6, 4, 0, 7) },
+          { k: 'rev', ax: 'x', at: [0, 104], m: 'steel', h: 2, p: box(307.5, 4, 313.5, 7) }
+        ]),
+      seg: 12,
+      axes: [[-14, 104, 321, 104]],
+      tags: [[0, 25.5, 30, 25, -20], [1, 39.75, 20, 55, -20], [2, 6, 40, -14, 40], [3, 150, 104, 150, 124]],
+      res: { at: [[210.75, 20]], lab: [240, -20] }
     }
   };
 
@@ -284,7 +380,7 @@
       if (p.k === 'rev') {
         const side = s => p.p.map(v => (p.ax === 'y' ? [p.at[0] + s * v[1], p.at[1] + v[0]] : [p.at[0] + v[0], p.at[1] + s * v[1]]));
         items.push({ pts: side(1), m: p.m, h: p.h });
-        if (!scene.half) items.push({ pts: side(-1), m: p.m, h: p.h });
+        if (!scene.half || p.full) items.push({ pts: side(-1), m: p.m, h: p.h });
       } else if (p.k === 'ext') {
         items.push({ pts: p.p, m: p.m, h: p.h, beyond: !(p.z[0] <= 0 && p.z[1] >= 0) });
       } else if (p.k === 'ball') {
