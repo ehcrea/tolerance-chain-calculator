@@ -7,7 +7,7 @@
 <meta name="description" content="Free 1D tolerance stack-up calculator with ISO 286 fits, ISO 2768-1, thermal expansion, angular deviations and play. Worst case, RSS and Monte Carlo.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <script>
-  // apply the saved theme before first paint; "auto" follows the system setting
+  // apply the saved theme before first paint; with none saved the system setting applies
   try { const t = localStorage.getItem('tcc.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) { /* storage unavailable */ }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,6 +78,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.small { padding: 3px 9px; font-size: 13px; }
 select.btn { padding-right: 8px; }
+.btn.icon { display: inline-grid; place-items: center; width: 40px; padding: 0; align-self: stretch; color: var(--ink); }
 .btn:disabled { opacity: 0.55; cursor: progress; }
 .tb-sep { width: 1px; align-self: stretch; background: var(--line-strong); margin: 2px 2px; }
 
@@ -274,11 +275,6 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
     </div>
     <div class="toolbar">
-      <div class="tabs" id="themeTabs" role="group" aria-label="Colour theme">
-        <button type="button" data-theme-set="auto" aria-pressed="true" title="Follow the system setting">Auto</button>
-        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
-        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
-      </div>
       <div class="tabs" id="unitTabs" role="group" aria-label="Units">
         <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
         <button type="button" data-units="imp" aria-pressed="false">Imperial · in</button>
@@ -308,6 +304,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       <button class="btn" id="dlCsv" type="button" title="Download results as CSV">CSV</button>
       <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook">Excel</button>
       <button class="btn primary" id="pdfReport" type="button" title="Open a print-ready report; choose Save as PDF in the print dialog">PDF report</button>
+      <button class="btn icon" id="btnTheme" type="button" title="Toggle light/dark theme" aria-label="Toggle theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
     </div>
   </header>
 
@@ -772,18 +769,13 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (el) { el.focus(); el.select(); }
   }));
   document.querySelectorAll('[data-s]').forEach(el => el.addEventListener('input', () => { state[el.dataset.s] = storeVal(el.value, el.dataset.u); schedule(); }));
-  // theme is a per-viewer preference, kept apart from the stack
-  function applyTheme(t) {
-    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-    else delete document.documentElement.dataset.theme;
-    document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeSet === (t === 'light' || t === 'dark' ? t : 'auto'))));
-  }
-  try { applyTheme(localStorage.getItem('tcc.theme')); } catch (e) { applyTheme('auto'); }
-  $('#themeTabs').addEventListener('click', e => {
-    const b = e.target.closest('[data-theme-set]');
-    if (!b) return;
-    applyTheme(b.dataset.themeSet);
-    try { localStorage.setItem('tcc.theme', b.dataset.themeSet); } catch (err) { /* storage unavailable */ }
+  // theme is a per-viewer preference, kept apart from the stack; until toggled it follows the system setting
+  $('#btnTheme').addEventListener('click', () => {
+    const t = document.documentElement.dataset.theme;
+    const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    const next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('tcc.theme', next); } catch (e) { /* storage unavailable */ }
   });
   $('#unitTabs').addEventListener('click', e => {
     const b = e.target.closest('[data-units]');

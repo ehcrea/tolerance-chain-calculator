@@ -16,7 +16,7 @@ A free, browser-based 1D tolerance stack-up calculator for mechanical and precis
 - **Chain diagram**: arrows with a ± tolerance band at each tip, coloured by share of result variance; hover for details, click to jump to the contributor; switch between equal steps and true scale
 - **Exports**: CSV and Excel (.xlsx) downloads with three tables: contributors, results by temperature and Monte Carlo histogram data, in the unit currently selected
 - **PDF report**: A4 report with header (stack, date, revision, author), summary, contributors, chain diagram, results, histograms at all three temperatures, contribution chart and method notes. Press *PDF report* and choose *Save as PDF* in the print dialog
-- **Light, dark or automatic theme**, remembered per browser
+- **Light/dark theme toggle**: follows the system setting until switched, then remembered per browser
 - **Eight worked examples**: bearing cover gap, DIN 471 retaining ring play, gear centre distance with bearing play, sheet metal bracket, pin-located sensor bracket, two-pin machining fixture, ball screw stage with a warm screw, PCB in a plastic housing from −40 to 85 °C
 
 Stacks are saved in the browser and can be saved and loaded as .json files.
