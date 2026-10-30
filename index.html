@@ -6,6 +6,10 @@
 <title>Tolerance Chain Calculator</title>
 <meta name="description" content="Free 1D tolerance stack-up calculator with ISO 286 fits, ISO 2768-1, thermal expansion, angular deviations and play. Worst case, RSS and Monte Carlo.">
 <meta name="claude:viewport-fit-sides" content="cover">
+<script>
+  // apply the saved theme before first paint; "auto" follows the system setting
+  try { const t = localStorage.getItem('tcc.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) { /* storage unavailable */ }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -270,6 +274,11 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
     </div>
     <div class="toolbar">
+      <div class="tabs" id="themeTabs" role="group" aria-label="Colour theme">
+        <button type="button" data-theme-set="auto" aria-pressed="true" title="Follow the system setting">Auto</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
       <div class="tabs" id="unitTabs" role="group" aria-label="Units">
         <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
         <button type="button" data-units="imp" aria-pressed="false">Imperial · in</button>
@@ -277,9 +286,22 @@ details.panel[open] > summary { margin-bottom: 12px; }
       <label class="sr" for="example">Load an example stack</label>
       <select id="example" class="btn">
         <option value="">Load example…</option>
-        <option value="bearing">Bearing cover axial gap</option>
-        <option value="pins">Pin-located sensor bracket</option>
-        <option value="gear">Gear centre distance with bearing play</option>
+        <optgroup label="Shafts and bearings">
+          <option value="bearing">Bearing cover axial gap</option>
+          <option value="circlip">Retaining ring (DIN 471) axial play</option>
+          <option value="gear">Gear centre distance with bearing play</option>
+        </optgroup>
+        <optgroup label="Sheet metal">
+          <option value="sheet">Bent bracket to enclosure lid</option>
+        </optgroup>
+        <optgroup label="Precision and locating">
+          <option value="pins">Pin-located sensor bracket</option>
+          <option value="fixture">Two-pin machining fixture</option>
+        </optgroup>
+        <optgroup label="Thermal">
+          <option value="ballscrew">Ball screw stage, warm screw</option>
+          <option value="pcb">PCB in plastic housing, −40 to 85 °C</option>
+        </optgroup>
       </select>
       <button class="btn" id="newStack" type="button">New stack</button>
       <span class="tb-sep" aria-hidden="true"></span>
@@ -439,6 +461,54 @@ details.panel[open] > summary { margin-bottom: 12px; }
         mk('fit', { label: 'Bearing 2 OD Ø32 in housing bore', dir: -1, D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
         mk('play', { label: 'Bearing 2 radial clearance (6201, CN)', dir: -1, pmin: '0.003', pmax: '0.018' }),
         mk('lin', { label: 'Gear runout at pitch circle', nom: '0', up: '0.01', lo: '-0.01', mat: 'none' })
+      ]
+    }),
+    circlip: () => ({
+      name: 'Retaining ring axial play', result: 'Axial play between bearing inner ring and DIN 471 retaining ring', lsl: '0.02', usl: '0.35', tCold: '-20', tHot: '80', n: '100000',
+      rows: [
+        mk('lin', { label: 'Shaft: shoulder to groove flank', nom: '14.85', up: '0.05', lo: '0' }),
+        mk('lin', { label: 'Groove width m (DIN 471)', nom: '1.1', tolMode: 'iso286', iso: 'H13' }),
+        mk('lin', { label: 'Retaining ring thickness s (DIN 471)', dir: -1, nom: '1.0', tolMode: 'iso286', iso: 'h11' }),
+        mk('lin', { label: 'Bearing 6202 width B', dir: -1, nom: '11', up: '0', lo: '-0.12', mat: 'bearing' }),
+        mk('lin', { label: 'Spacer washer', dir: -1, nom: '4', up: '0.02', lo: '-0.02' })
+      ]
+    }),
+    sheet: () => ({
+      name: 'Sheet metal bracket', result: 'Gap between bent bracket flange and enclosure lid', lsl: '0.5', usl: '3.5', tCold: '-10', tHot: '60', n: '100000',
+      rows: [
+        mk('lin', { label: 'Base plate: mounting face to lid seat', nom: '38.5', tolMode: 'iso2768', cls: 'm', mat: 'al' }),
+        mk('lin', { label: 'Bracket: bend height H', dir: -1, nom: '35', tolMode: 'iso2768', cls: 'm' }),
+        mk('lin', { label: 'Sheet thickness 1.5 (EN 10131)', dir: -1, nom: '1.5', up: '0.1', lo: '-0.1' }),
+        mk('ang', { label: 'Bend angle 90° (ISO 2768-m) over flange', L: '20', angMode: 'iso2768', cls: 'm', leg: '20' }),
+        mk('fit', { label: 'M5 screw in Ø5.5 clearance hole', D: '5.5', hMode: 'dev', hUp: '0.18', hLo: '0', sMode: 'dev', sUp: '-0.524', sLo: '-0.674', dist: 'uniform' })
+      ]
+    }),
+    fixture: () => ({
+      name: 'Two-pin machining fixture', result: 'Machined bore X position from fixture datum', lsl: '79.97', usl: '80.03', tCold: '18', tHot: '26', n: '100000',
+      rows: [
+        mk('lin', { label: 'Fixture: datum to round locating pin', nom: '50', up: '0.005', lo: '-0.005' }),
+        mk('fit', { label: 'Ø10 round pin (g6) in workpiece hole H7', D: '10', hIso: 'H7', sIso: 'g6', hMat: 'al' }),
+        mk('lin', { label: 'Workpiece: locating hole to bore', nom: '30', up: '0.01', lo: '-0.01', mat: 'al' }),
+        mk('lin', { label: 'Machine positioning repeatability', nom: '0', up: '0.003', lo: '-0.003', mat: 'none' }),
+        mk('play', { label: 'Shift under clamping force', pmin: '0', pmax: '0.004', eff: 'side' })
+      ]
+    }),
+    ballscrew: () => ({
+      name: 'Ball screw stage', result: 'Tool point position at 300 mm commanded travel', lsl: '389.95', usl: '390.05', tCold: '18', tHot: '28', n: '100000',
+      rows: [
+        mk('lin', { label: 'Frame: base datum to fixed bearing', nom: '50', up: '0.01', lo: '-0.01', mat: 'al' }),
+        mk('lin', { label: 'Ball screw travel 300 mm, class T5 (e300 = 23 µm), runs 8 °C warm', nom: '300', up: '0.0115', lo: '-0.0115', dT: '8' }),
+        mk('play', { label: 'Fixed bearing axial play (preloaded pair)', pmin: '0', pmax: '0.002' }),
+        mk('play', { label: 'Nut backlash (preloaded nut)', pmin: '0', pmax: '0.003' }),
+        mk('lin', { label: 'Carriage: nut flange to tool point', nom: '40', up: '0.01', lo: '-0.01', mat: 'al' })
+      ]
+    }),
+    pcb: () => ({
+      name: 'PCB in plastic housing', result: 'Total side clearance between PCB edges and housing walls', lsl: '0.10', usl: '1.00', tCold: '-40', tHot: '85', n: '100000',
+      rows: [
+        mk('lin', { label: 'Housing: inner width (moulded)', nom: '80', up: '0.15', lo: '-0.15', mat: 'pa66gf' }),
+        mk('lin', { label: 'PCB width (routed FR4, α 16)', dir: -1, nom: '79.6', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '16' }),
+        mk('lin', { label: 'Housing wall warpage', nom: '0', up: '0', lo: '-0.15', mat: 'none', dist: 'uniform' })
       ]
     })
   };
@@ -702,6 +772,19 @@ details.panel[open] > summary { margin-bottom: 12px; }
     if (el) { el.focus(); el.select(); }
   }));
   document.querySelectorAll('[data-s]').forEach(el => el.addEventListener('input', () => { state[el.dataset.s] = storeVal(el.value, el.dataset.u); schedule(); }));
+  // theme is a per-viewer preference, kept apart from the stack
+  function applyTheme(t) {
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    else delete document.documentElement.dataset.theme;
+    document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeSet === (t === 'light' || t === 'dark' ? t : 'auto'))));
+  }
+  try { applyTheme(localStorage.getItem('tcc.theme')); } catch (e) { applyTheme('auto'); }
+  $('#themeTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-theme-set]');
+    if (!b) return;
+    applyTheme(b.dataset.themeSet);
+    try { localStorage.setItem('tcc.theme', b.dataset.themeSet); } catch (err) { /* storage unavailable */ }
+  });
   $('#unitTabs').addEventListener('click', e => {
     const b = e.target.closest('[data-units]');
     if (!b || b.dataset.units === state.units) return;
