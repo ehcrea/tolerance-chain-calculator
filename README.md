@@ -13,6 +13,7 @@ A free, browser-based 1D tolerance stack-up calculator for mechanical and precis
 - **Thermal expansion** per part (material library or custom α) relative to the ISO 1 reference temperature of 20 °C, including clearance change between hole and shaft materials
 - **Results** at minimum ambient, 20 °C and maximum ambient: worst case, RSS and Monte Carlo, with pass/fail against limits, ppm out of limits, Cpk, a histogram and a variance contribution chart
 - **SI or imperial units**: switch between mm/°C and inch/°F at any time. Calculations and saved files always stay in mm and °C, so a stack opens the same in either mode; ISO 286 and ISO 2768 values are looked up from the metric size and shown converted
+- **About and footer**: an *About* dialog (also at `#about`) and a footer with links to [ehcrea.com](https://ehcrea.com) and the MIT license, styled like the other ehcrea calculators
 - **Assembly view**: each example comes with a schematic 2D section and a 3D isometric half-section of its parts; numbered balloons match the contributors (click one to jump to it) and the measured result is marked in orange
 - **Chain diagram**: arrows with a ± tolerance band at each tip, coloured by share of result variance; hover for details, click to jump to the contributor; switch between equal steps and true scale
 - **Exports**: CSV and Excel (.xlsx) downloads with three tables: contributors, results by temperature and Monte Carlo histogram data, in the unit currently selected

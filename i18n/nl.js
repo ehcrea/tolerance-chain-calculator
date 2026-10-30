@@ -400,5 +400,15 @@ I18N.add('nl', {
   "View": "Weergave",
   "Schematic assembly view of the example. Select a numbered balloon to go to its contributor.": "Schematisch samenstellingsaanzicht van het voorbeeld. Kies een positienummer om naar de schakel te gaan.",
   "Schematic, not to scale. Numbers match the contributors; orange marks the result.": "Schematisch, niet op schaal. De nummers komen overeen met de schakels; oranje markeert het resultaat.",
-  "Assembly view (schematic)": "Samenstellingsaanzicht (schematisch)"
+  "Assembly view (schematic)": "Samenstellingsaanzicht (schematisch)",
+  // about and footer
+  "About": "Over",
+  "About this calculator": "Over deze calculator",
+  "MIT License": "MIT-licentie",
+  "Close": "Sluiten",
+  "by Eren Tozlu": "door Eren Tozlu",
+  "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Een gratis browsertool voor 1D-tolerantieketenanalyse. Het combineert ISO 286-passingen, algemene toleranties volgens ISO 2768, thermische uitzetting, hoekafwijkingen en speling, en vergelijkt worst case, RSS en Monte Carlo. Alle berekeningen draaien in uw browser; er wordt niets geüpload.",
+  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Gemaakt door Eren Tozlu. Meer technische tools en projecten op <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Open source onder de <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT-licentie</a>; de broncode staat op <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+  "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "De resultaten zijn technische schattingen. Controleer kritische ketens met metingen of een gedetailleerde analyse."
 });

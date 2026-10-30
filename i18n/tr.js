@@ -400,5 +400,15 @@ I18N.add('tr', {
   "View": "Görünüm",
   "Schematic assembly view of the example. Select a numbered balloon to go to its contributor.": "Örneğin şematik montaj görünümü. Zincir elemanına gitmek için numaralı balonu seçin.",
   "Schematic, not to scale. Numbers match the contributors; orange marks the result.": "Şematik, ölçekli değil. Numaralar zincir elemanlarıyla eşleşir; turuncu sonucu gösterir.",
-  "Assembly view (schematic)": "Montaj görünümü (şematik)"
+  "Assembly view (schematic)": "Montaj görünümü (şematik)",
+  // about and footer
+  "About": "Hakkında",
+  "About this calculator": "Bu hesaplayıcı hakkında",
+  "MIT License": "MIT Lisansı",
+  "Close": "Kapat",
+  "by Eren Tozlu": "Eren Tozlu",
+  "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "1B tolerans zinciri analizi için ücretsiz, tarayıcı tabanlı bir araç. ISO 286 geçmelerini, ISO 2768 genel toleranslarını, ısıl genleşmeyi, açısal sapmaları ve boşluğu birleştirir; en kötü durum, RSS ve Monte Carlo sonuçlarını karşılaştırır. Tüm hesaplamalar tarayıcınızda çalışır; hiçbir şey yüklenmez.",
+  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Eren Tozlu tarafından geliştirildi. Daha fazla mühendislik aracı ve proje: <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "<a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT Lisansı</a> altında açık kaynaklıdır; kaynak kodu <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a> üzerindedir.",
+  "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Sonuçlar mühendislik tahminidir. Kritik zincirleri ölçümle veya ayrıntılı bir analizle doğrulayın."
 });
