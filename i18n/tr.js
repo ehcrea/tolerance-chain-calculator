@@ -449,5 +449,8 @@ I18N.add('tr', {
   "Cells: 10 × 27.0 ±0.15 (factor 10 treats them as one batch)": "Hücreler: 10 × 27,0 ±0,15 (10 katsayısı onları tek parti sayar)",
   "Foam pads: 9 × 1.5 ±0.15 free height": "Köpük pedler: 9 × 1,5 ±0,15 serbest yükseklik",
   "End plates: 2 × 12 ±0.1": "Uç plakalar: 2 × 12 ±0,1",
-  "Tie rods: distance between nut seats": "Gergi çubukları: somun oturma yüzeyleri arası mesafe"
+  "Tie rods: distance between nut seats": "Gergi çubukları: somun oturma yüzeyleri arası mesafe",
+  // support on Patreon
+  "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Hesaplayıcıyı beğendiniz mi?</strong> Herkes için ücretsiz ve boş zamanlarımda yeni özellikler eklemeye devam ediyorum. Bir projede zaman kazandırdıysa ya da öğrenmenize yardımcı olduysa, gelişimini Patreon üzerinden destekleyebilirsiniz. Büyük ya da küçük her katkı, yeni mühendislik araçları geliştirmeye devam etmeme yardımcı olur. Teşekkürler!",
+  "Support me on Patreon": "Patreon'da destek olun"
 });

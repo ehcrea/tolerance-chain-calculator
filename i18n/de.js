@@ -449,5 +449,8 @@ I18N.add('de', {
   "Cells: 10 × 27.0 ±0.15 (factor 10 treats them as one batch)": "Zellen: 10 × 27,0 ±0,15 (Faktor 10 behandelt sie als eine Charge)",
   "Foam pads: 9 × 1.5 ±0.15 free height": "Schaumstoffpads: 9 × 1,5 ±0,15 freie Höhe",
   "End plates: 2 × 12 ±0.1": "Endplatten: 2 × 12 ±0,1",
-  "Tie rods: distance between nut seats": "Zuganker: Abstand der Mutterauflagen"
+  "Tie rods: distance between nut seats": "Zuganker: Abstand der Mutterauflagen",
+  // support on Patreon
+  "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Gefällt Ihnen der Rechner?</strong> Er ist für alle kostenlos, und ich erweitere ihn in meiner Freizeit. Wenn er Ihnen bei einem Projekt Zeit gespart oder beim Lernen geholfen hat, können Sie die Weiterentwicklung auf Patreon unterstützen. Jeder Beitrag, ob groß oder klein, hilft mir, neue technische Werkzeuge zu entwickeln. Vielen Dank!",
+  "Support me on Patreon": "Auf Patreon unterstützen"
 });

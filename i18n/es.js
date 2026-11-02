@@ -449,5 +449,8 @@ I18N.add('es', {
   "Cells: 10 × 27.0 ±0.15 (factor 10 treats them as one batch)": "Celdas: 10 × 27,0 ±0,15 (el factor 10 las trata como un solo lote)",
   "Foam pads: 9 × 1.5 ±0.15 free height": "Almohadillas de espuma: 9 × 1,5 ±0,15 altura libre",
   "End plates: 2 × 12 ±0.1": "Placas extremas: 2 × 12 ±0,1",
-  "Tie rods: distance between nut seats": "Tirantes: distancia entre asientos de tuercas"
+  "Tie rods: distance between nut seats": "Tirantes: distancia entre asientos de tuercas",
+  // support on Patreon
+  "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>¿Le resulta útil la calculadora?</strong> Es gratuita para todos y sigo añadiendo funciones en mi tiempo libre. Si le ha ahorrado tiempo en un proyecto o le ha ayudado a aprender, puede apoyar su desarrollo en Patreon. Cada aportación, grande o pequeña, me ayuda a seguir creando nuevas herramientas de ingeniería. ¡Gracias!",
+  "Support me on Patreon": "Apóyeme en Patreon"
 });

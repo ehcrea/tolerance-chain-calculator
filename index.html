@@ -193,6 +193,10 @@ select.btn { padding-right: 8px; }
 .about-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
 .about p { line-height: 1.55; margin: 0 0 10px; }
 .about a { color: var(--accent); }
+.about-support { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--accent-soft); }
+.about-support p { margin: 0 0 10px; }
+.about a.btn-support { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; background: #ff424d; color: #fff; font-weight: 600; font-size: 13px; text-decoration: none; }
+.about a.btn-support:hover { background: #e63a44; }
 .about .about-meta { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 
 /* assembly view */
@@ -485,6 +489,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   <p data-i18n>A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.</p>
   <p data-i18n-html>Made by Eren Tozlu. More engineering tools and projects at <a href="https://ehcrea.com" target="_blank" rel="noopener">ehcrea.com</a>.</p>
   <p data-i18n-html>Open source under the <a href="https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>; the source code is on <a href="https://github.com/ehcrea/tolerance-chain-calculator" target="_blank" rel="noopener">GitHub</a>.</p>
+  <div class="about-support"><p data-i18n-html><strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!</p><a class="btn-support" href="https://www.patreon.com/ehcrea" target="_blank" rel="noopener"><span aria-hidden="true">♥</span> <span data-i18n>Support me on Patreon</span></a></div>
   <p class="about-meta" data-i18n>Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.</p>
 </dialog>
 <section id="report" class="report" aria-label="Printable report" data-i18n-attr="aria-label"></section>

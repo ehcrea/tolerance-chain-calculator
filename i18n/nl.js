@@ -449,5 +449,8 @@ I18N.add('nl', {
   "Cells: 10 × 27.0 ±0.15 (factor 10 treats them as one batch)": "Cellen: 10 × 27,0 ±0,15 (factor 10 behandelt ze als één batch)",
   "Foam pads: 9 × 1.5 ±0.15 free height": "Schuimpads: 9 × 1,5 ±0,15 vrije hoogte",
   "End plates: 2 × 12 ±0.1": "Eindplaten: 2 × 12 ±0,1",
-  "Tie rods: distance between nut seats": "Trekstangen: afstand tussen moerzittingen"
+  "Tie rods: distance between nut seats": "Trekstangen: afstand tussen moerzittingen",
+  // support on Patreon
+  "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Bevalt de calculator?</strong> Hij is gratis voor iedereen en ik voeg in mijn vrije tijd nieuwe functies toe. Heeft hij u tijd bespaard bij een project of geholpen bij het leren, dan kunt u de verdere ontwikkeling steunen via Patreon. Elke bijdrage, groot of klein, helpt me nieuwe technische tools te maken. Dank u wel!",
+  "Support me on Patreon": "Steun mij op Patreon"
 });
