@@ -12,6 +12,7 @@
     { code: 'en', name: 'English' },
     { code: 'de', name: 'Deutsch' },
     { code: 'nl', name: 'Nederlands' },
+    { code: 'es', name: 'Español' },
     { code: 'tr', name: 'Türkçe' }
   ];
   const dicts = {};
