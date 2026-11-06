@@ -41,6 +41,9 @@
   }
   // saved choice, else the browser language when it is one of ours
   function initial() {
+    // a language page (/de/, /nl/, …) always shows its own language
+    const page = root.document && root.document.documentElement.dataset.page;
+    if (supported(page)) return page;
     try { const s = root.localStorage.getItem(KEY); if (supported(s)) return s; } catch (e) { /* storage unavailable */ }
     const nav = (root.navigator && root.navigator.language || 'en').slice(0, 2).toLowerCase();
     return supported(nav) ? nav : 'en';
@@ -64,9 +67,18 @@
     });
   }
 
+  // On a language page, go to the page of language `code` (keeping the #hash); false elsewhere.
+  function goToLang(code) {
+    const page = root.document.documentElement.dataset.page;
+    if (!page || !supported(code)) return false;
+    try { root.localStorage.setItem(KEY, code); } catch (e) { /* storage unavailable */ }
+    root.location.href = (page === 'en' ? '' : '../') + (code === 'en' ? '' : code + '/') + root.location.hash;
+    return true;
+  }
+
   setLang(initial(), false);
   root.I18N = {
-    LANGS, add, t, setLang, apply,
+    LANGS, add, t, setLang, apply, goToLang,
     lang: () => lang,
     upper: s => s.toLocaleUpperCase(lang),
     // Tests: collect English strings that have no translation in the current language.
