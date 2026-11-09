@@ -406,9 +406,9 @@ I18N.add('es', {
   "About this calculator": "Acerca de esta calculadora",
   "MIT License": "Licencia MIT",
   "Close": "Cerrar",
-  "by Eren Tozlu": "por Eren Tozlu",
+  "by E. Tozlu": "por E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Una herramienta gratuita en el navegador para el análisis de cadenas de tolerancias 1D. Combina ajustes ISO 286, tolerancias generales ISO 2768, dilatación térmica, desviaciones angulares y juego, y compara los resultados de peor caso, RSS y Monte Carlo. Todos los cálculos se ejecutan en su navegador; no se sube nada.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Desarrollada por Eren Tozlu. Más herramientas y proyectos de ingeniería en <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Desarrollada por E. Tozlu. Más herramientas y proyectos de ingeniería en <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Código abierto bajo la <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">Licencia MIT</a>; el código fuente está en <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Los resultados son estimaciones de ingeniería. Verifique las cadenas críticas con mediciones o un análisis detallado.",
   // examples: sealing, housings, electronics, batteries
