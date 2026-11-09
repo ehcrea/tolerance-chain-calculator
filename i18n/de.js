@@ -406,9 +406,9 @@ I18N.add('de', {
   "About this calculator": "Über diesen Rechner",
   "MIT License": "MIT-Lizenz",
   "Close": "Schließen",
-  "by Eren Tozlu": "von Eren Tozlu",
+  "by E. Tozlu": "von E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Ein kostenloses Browser-Werkzeug für eindimensionale Toleranzketten. Es verbindet ISO-286-Passungen, Allgemeintoleranzen nach ISO 2768, Wärmeausdehnung, Winkelabweichungen und Spiel und vergleicht Worst Case, RSS und Monte Carlo. Alle Berechnungen laufen in Ihrem Browser; es wird nichts hochgeladen.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Entwickelt von Eren Tozlu. Weitere technische Werkzeuge und Projekte auf <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Entwickelt von E. Tozlu. Weitere technische Werkzeuge und Projekte auf <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Open Source unter der <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT-Lizenz</a>; der Quellcode liegt auf <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Die Ergebnisse sind ingenieurmäßige Abschätzungen. Kritische Toleranzketten durch Messung oder eine detaillierte Analyse absichern.",
   // examples: sealing, housings, electronics, batteries
