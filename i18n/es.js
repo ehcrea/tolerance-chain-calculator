@@ -452,5 +452,9 @@ I18N.add('es', {
   "Tie rods: distance between nut seats": "Tirantes: distancia entre asientos de tuercas",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>¿Le resulta útil la calculadora?</strong> Es gratuita para todos y sigo añadiendo funciones en mi tiempo libre. Si le ha ahorrado tiempo en un proyecto o le ha ayudado a aprender, puede apoyar su desarrollo en Patreon. Cada aportación, grande o pequeña, me ayuda a seguir creando nuevas herramientas de ingeniería. ¡Gracias!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Siga a ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio en Instagram (se abre en una pestaña nueva)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio en Facebook (se abre en una pestaña nueva)",
   "Support me on Patreon": "Apóyeme en Patreon"
 });

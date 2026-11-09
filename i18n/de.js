@@ -452,5 +452,9 @@ I18N.add('de', {
   "Tie rods: distance between nut seats": "Zuganker: Abstand der Mutterauflagen",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Gefällt Ihnen der Rechner?</strong> Er ist für alle kostenlos, und ich erweitere ihn in meiner Freizeit. Wenn er Ihnen bei einem Projekt Zeit gespart oder beim Lernen geholfen hat, können Sie die Weiterentwicklung auf Patreon unterstützen. Jeder Beitrag, ob groß oder klein, hilft mir, neue technische Werkzeuge zu entwickeln. Vielen Dank!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Folgen Sie ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio auf Instagram (öffnet in neuem Tab)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio auf Facebook (öffnet in neuem Tab)",
   "Support me on Patreon": "Auf Patreon unterstützen"
 });

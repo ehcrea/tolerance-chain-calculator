@@ -452,5 +452,9 @@ I18N.add('nl', {
   "Tie rods: distance between nut seats": "Trekstangen: afstand tussen moerzittingen",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Bevalt de calculator?</strong> Hij is gratis voor iedereen en ik voeg in mijn vrije tijd nieuwe functies toe. Heeft hij u tijd bespaard bij een project of geholpen bij het leren, dan kunt u de verdere ontwikkeling steunen via Patreon. Elke bijdrage, groot of klein, helpt me nieuwe technische tools te maken. Dank u wel!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Volg ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio op Instagram (opent in nieuw tabblad)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio op Facebook (opent in nieuw tabblad)",
   "Support me on Patreon": "Steun mij op Patreon"
 });
