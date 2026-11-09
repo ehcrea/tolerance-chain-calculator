@@ -452,5 +452,9 @@ I18N.add('tr', {
   "Tie rods: distance between nut seats": "Gergi çubukları: somun oturma yüzeyleri arası mesafe",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Hesaplayıcıyı beğendiniz mi?</strong> Herkes için ücretsiz ve boş zamanlarımda yeni özellikler eklemeye devam ediyorum. Bir projede zaman kazandırdıysa ya da öğrenmenize yardımcı olduysa, gelişimini Patreon üzerinden destekleyebilirsiniz. Büyük ya da küçük her katkı, yeni mühendislik araçları geliştirmeye devam etmeme yardımcı olur. Teşekkürler!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "ehcrea.studio'yu takip edin",
+  "ehcrea.studio on Instagram (opens in a new tab)": "Instagram'da ehcrea.studio (yeni sekmede açılır)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "Facebook'ta ehcrea.studio (yeni sekmede açılır)",
   "Support me on Patreon": "Patreon'da destek olun"
 });
