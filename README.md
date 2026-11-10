@@ -42,7 +42,7 @@ ISO 286-1 deviations are computed from the fundamental deviation rules for sizes
 
 - `index.html`: the user interface
 - `engine.js`: calculation engine, also usable from Node (`require('./engine.js')`)
-- `tests/iso286.test.js`: ISO 286 fit deviations checked against the ISO 286-2 tables (`node tests/iso286.test.js`)
+- `tests/iso286.test.js`: ISO 286 fit deviations checked against the ISO 286-2 tables (`node tests/iso286.test.js`, run by GitHub Actions on every push and pull request)
 - `preview.js`: the example assemblies and their 2D / isometric drawing
 - `i18n.js`: translation helper; `i18n/de.js`, `i18n/nl.js`, `i18n/es.js`, `i18n/tr.js` map the English text to each language
 - `favicon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `manifest.webmanifest`: browser and home-screen icons
