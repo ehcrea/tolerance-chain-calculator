@@ -406,9 +406,9 @@ I18N.add('de', {
   "About this calculator": "Über diesen Rechner",
   "MIT License": "MIT-Lizenz",
   "Close": "Schließen",
-  "by Eren Tozlu": "von Eren Tozlu",
+  "by E. Tozlu": "von E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Ein kostenloses Browser-Werkzeug für eindimensionale Toleranzketten. Es verbindet ISO-286-Passungen, Allgemeintoleranzen nach ISO 2768, Wärmeausdehnung, Winkelabweichungen und Spiel und vergleicht Worst Case, RSS und Monte Carlo. Alle Berechnungen laufen in Ihrem Browser; es wird nichts hochgeladen.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Entwickelt von Eren Tozlu. Weitere technische Werkzeuge und Projekte auf <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Entwickelt von E. Tozlu. Weitere technische Werkzeuge und Projekte auf <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Open Source unter der <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT-Lizenz</a>; der Quellcode liegt auf <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Die Ergebnisse sind ingenieurmäßige Abschätzungen. Kritische Toleranzketten durch Messung oder eine detaillierte Analyse absichern.",
   // examples: sealing, housings, electronics, batteries
@@ -452,6 +452,10 @@ I18N.add('de', {
   "Tie rods: distance between nut seats": "Zuganker: Abstand der Mutterauflagen",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Gefällt Ihnen der Rechner?</strong> Er ist für alle kostenlos, und ich erweitere ihn in meiner Freizeit. Wenn er Ihnen bei einem Projekt Zeit gespart oder beim Lernen geholfen hat, können Sie die Weiterentwicklung auf Patreon unterstützen. Jeder Beitrag, ob groß oder klein, hilft mir, neue technische Werkzeuge zu entwickeln. Vielen Dank!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Folgen Sie ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio auf Instagram (öffnet in neuem Tab)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio auf Facebook (öffnet in neuem Tab)",
   "Support me on Patreon": "Auf Patreon unterstützen",
   // new examples: floating fastener, car door, snap-fit, camera lens; share link and my examples
   "Camera lens focus": "Kamera-Objektiv Fokus",

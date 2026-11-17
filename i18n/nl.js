@@ -406,9 +406,9 @@ I18N.add('nl', {
   "About this calculator": "Over deze calculator",
   "MIT License": "MIT-licentie",
   "Close": "Sluiten",
-  "by Eren Tozlu": "door Eren Tozlu",
+  "by E. Tozlu": "door E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Een gratis browsertool voor 1D-tolerantieketenanalyse. Het combineert ISO 286-passingen, algemene toleranties volgens ISO 2768, thermische uitzetting, hoekafwijkingen en speling, en vergelijkt worst case, RSS en Monte Carlo. Alle berekeningen draaien in uw browser; er wordt niets geüpload.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Gemaakt door Eren Tozlu. Meer technische tools en projecten op <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Gemaakt door E. Tozlu. Meer technische tools en projecten op <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Open source onder de <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT-licentie</a>; de broncode staat op <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "De resultaten zijn technische schattingen. Controleer kritische ketens met metingen of een gedetailleerde analyse.",
   // examples: sealing, housings, electronics, batteries
@@ -452,6 +452,10 @@ I18N.add('nl', {
   "Tie rods: distance between nut seats": "Trekstangen: afstand tussen moerzittingen",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Bevalt de calculator?</strong> Hij is gratis voor iedereen en ik voeg in mijn vrije tijd nieuwe functies toe. Heeft hij u tijd bespaard bij een project of geholpen bij het leren, dan kunt u de verdere ontwikkeling steunen via Patreon. Elke bijdrage, groot of klein, helpt me nieuwe technische tools te maken. Dank u wel!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Volg ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio op Instagram (opent in nieuw tabblad)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio op Facebook (opent in nieuw tabblad)",
   "Support me on Patreon": "Steun mij op Patreon",
   // new examples: floating fastener, car door, snap-fit, camera lens; share link and my examples
   "Camera lens focus": "Focus cameralens",

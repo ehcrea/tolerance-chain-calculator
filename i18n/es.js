@@ -406,9 +406,9 @@ I18N.add('es', {
   "About this calculator": "Acerca de esta calculadora",
   "MIT License": "Licencia MIT",
   "Close": "Cerrar",
-  "by Eren Tozlu": "por Eren Tozlu",
+  "by E. Tozlu": "por E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "Una herramienta gratuita en el navegador para el análisis de cadenas de tolerancias 1D. Combina ajustes ISO 286, tolerancias generales ISO 2768, dilatación térmica, desviaciones angulares y juego, y compara los resultados de peor caso, RSS y Monte Carlo. Todos los cálculos se ejecutan en su navegador; no se sube nada.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Desarrollada por Eren Tozlu. Más herramientas y proyectos de ingeniería en <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Desarrollada por E. Tozlu. Más herramientas y proyectos de ingeniería en <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "Código abierto bajo la <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">Licencia MIT</a>; el código fuente está en <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Los resultados son estimaciones de ingeniería. Verifique las cadenas críticas con mediciones o un análisis detallado.",
   // examples: sealing, housings, electronics, batteries
@@ -452,6 +452,10 @@ I18N.add('es', {
   "Tie rods: distance between nut seats": "Tirantes: distancia entre asientos de tuercas",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>¿Le resulta útil la calculadora?</strong> Es gratuita para todos y sigo añadiendo funciones en mi tiempo libre. Si le ha ahorrado tiempo en un proyecto o le ha ayudado a aprender, puede apoyar su desarrollo en Patreon. Cada aportación, grande o pequeña, me ayuda a seguir creando nuevas herramientas de ingeniería. ¡Gracias!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "Siga a ehcrea.studio",
+  "ehcrea.studio on Instagram (opens in a new tab)": "ehcrea.studio en Instagram (se abre en una pestaña nueva)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "ehcrea.studio en Facebook (se abre en una pestaña nueva)",
   "Support me on Patreon": "Apóyeme en Patreon",
   // new examples: floating fastener, car door, snap-fit, camera lens; share link and my examples
   "Camera lens focus": "Enfoque de lente de cámara",

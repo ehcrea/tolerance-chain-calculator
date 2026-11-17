@@ -406,9 +406,9 @@ I18N.add('tr', {
   "About this calculator": "Bu hesaplayıcı hakkında",
   "MIT License": "MIT Lisansı",
   "Close": "Kapat",
-  "by Eren Tozlu": "Eren Tozlu",
+  "by E. Tozlu": "E. Tozlu",
   "A free, browser-based tool for 1D tolerance stack-up analysis. It combines ISO 286 fits, ISO 2768 general tolerances, thermal expansion, angular deviations and play, and compares worst case, RSS and Monte Carlo results. All calculations run in your browser; nothing is uploaded.": "1B tolerans zinciri analizi için ücretsiz, tarayıcı tabanlı bir araç. ISO 286 geçmelerini, ISO 2768 genel toleranslarını, ısıl genleşmeyi, açısal sapmaları ve boşluğu birleştirir; en kötü durum, RSS ve Monte Carlo sonuçlarını karşılaştırır. Tüm hesaplamalar tarayıcınızda çalışır; hiçbir şey yüklenmez.",
-  "Made by Eren Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "Eren Tozlu tarafından geliştirildi. Daha fazla mühendislik aracı ve proje: <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
+  "Made by E. Tozlu. More engineering tools and projects at <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.": "E. Tozlu tarafından geliştirildi. Daha fazla mühendislik aracı ve proje: <a href=\"https://ehcrea.com\" target=\"_blank\" rel=\"noopener\">ehcrea.com</a>.",
   "Open source under the <a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT License</a>; the source code is on <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a>.": "<a href=\"https://github.com/ehcrea/tolerance-chain-calculator/blob/main/LICENSE\" target=\"_blank\" rel=\"noopener\">MIT Lisansı</a> altında açık kaynaklıdır; kaynak kodu <a href=\"https://github.com/ehcrea/tolerance-chain-calculator\" target=\"_blank\" rel=\"noopener\">GitHub</a> üzerindedir.",
   "Results are engineering estimates. Check critical stacks against measurements or a detailed analysis.": "Sonuçlar mühendislik tahminidir. Kritik zincirleri ölçümle veya ayrıntılı bir analizle doğrulayın.",
   // examples: sealing, housings, electronics, batteries
@@ -452,6 +452,10 @@ I18N.add('tr', {
   "Tie rods: distance between nut seats": "Gergi çubukları: somun oturma yüzeyleri arası mesafe",
   // support on Patreon
   "<strong>Enjoying the calculator?</strong> It is free for everyone and I keep adding features in my spare time. If it saved you time on a project or helped you learn, you can support its development on Patreon. Every contribution, big or small, helps me keep building new engineering tools. Thank you!": "<strong>Hesaplayıcıyı beğendiniz mi?</strong> Herkes için ücretsiz ve boş zamanlarımda yeni özellikler eklemeye devam ediyorum. Bir projede zaman kazandırdıysa ya da öğrenmenize yardımcı olduysa, gelişimini Patreon üzerinden destekleyebilirsiniz. Büyük ya da küçük her katkı, yeni mühendislik araçları geliştirmeye devam etmeme yardımcı olur. Teşekkürler!",
+  // follow ehcrea.studio
+  "Follow ehcrea.studio": "ehcrea.studio'yu takip edin",
+  "ehcrea.studio on Instagram (opens in a new tab)": "Instagram'da ehcrea.studio (yeni sekmede açılır)",
+  "ehcrea.studio on Facebook (opens in a new tab)": "Facebook'ta ehcrea.studio (yeni sekmede açılır)",
   "Support me on Patreon": "Patreon'da destek olun",
   // new examples: floating fastener, car door, snap-fit, camera lens; share link and my examples
   "Camera lens focus": "Kamera lensi odağı",

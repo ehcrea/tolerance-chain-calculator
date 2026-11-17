@@ -108,7 +108,9 @@
     for (let i = 0; i < list.length; i++) if (D <= list[i]) return i;
     return -1;
   }
-  function halfIT(it) { return it % 2 ? (it - 1) / 2 : it / 2; }
+  // js/JS: ±IT/2. ISO 286-1 rounds an odd IT down to the even value only for grades 7 to 11
+  // (js6 over 18 up to 30 mm is ±6.5 µm, js7 is ±10 µm).
+  function halfIT(it, grade) { return it % 2 && grade >= 7 && grade <= 11 ? (it - 1) / 2 : it / 2; }
 
   function shaftDevUm(l, grade, D) {
     const i = idx(MAIN, D);
@@ -117,7 +119,7 @@
     if (it == null) return bad('Grade IT{g} is outside IT4–IT13', { g: grade });
     let es, ei;
     if (UPPER[l]) { es = -UPPER[l][i]; ei = es - it; }
-    else if (l === 'js') { es = halfIT(it); ei = -es; }
+    else if (l === 'js') { es = halfIT(it, grade); ei = -es; }
     else if (l === 'k') { ei = grade >= 4 && grade <= 7 ? LOWER.k[i] : 0; es = ei + it; }
     else if (LOWER[l]) { ei = LOWER[l][i]; es = ei + it; }
     else if (LOWER_FINE[l]) { ei = LOWER_FINE[l][idx(FINE, D)]; es = ei + it; }
@@ -133,7 +135,7 @@
     if (it == null) return bad('Grade IT{g} is outside IT4–IT13', { g: grade });
     let ES, EI;
     if (UPPER[l]) { EI = UPPER[l][i]; ES = EI + it; }
-    else if (l === 'js') { ES = halfIT(it); EI = -ES; }
+    else if (l === 'js') { ES = halfIT(it, grade); EI = -ES; }
     else if (l === 'k' || l === 'm' || l === 'n') {
       const ei = LOWER[l][i];
       if (grade <= 8) {
