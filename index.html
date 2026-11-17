@@ -120,11 +120,19 @@ select.btn { padding-right: 8px; }
 .fld.wide { grid-column: span 2; }
 .lab { font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lab em { font-style: normal; opacity: 0.8; }
-.fld input, .fld select { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--field); border-radius: 4px; padding: 5px 7px; font-size: 13.5px; }
-.fld input:hover, .fld select:hover { border-color: var(--line-strong); }
+.fld input, .fld select, .fld textarea { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--field); border-radius: 4px; padding: 5px 7px; font-size: 13.5px; }
+.fld textarea { resize: vertical; min-height: 2.6em; font-family: inherit; line-height: 1.4; color: inherit; }
+.fld input:hover, .fld select:hover, .fld textarea:hover { border-color: var(--line-strong); }
 .setup .grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
 .setup .fld.name { grid-column: span 2; }
 .setup .fld.res { grid-column: 1 / -1; }
+.head-act { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.mine-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; }
+.mine-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.mine-list .mine-name { flex: 1 1 150px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mine-list .mine-date { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.mine-list .btn.armed { border-color: var(--bad); color: var(--bad); }
+.mine-empty { color: var(--muted); padding: 4px 0; }
 
 /* contributor cards */
 .rows-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 4px 2px 0; }
@@ -291,6 +299,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
 .rp-kicker { font-family: var(--font-display); font-size: 9pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 .rp-head h1 { font-size: 20pt; margin: 1mm 0; }
 .rp-head p { margin: 0; color: var(--muted); max-width: 95mm; }
+.rp-head p.rp-notes { margin-top: 2mm; font-size: 8.5pt; white-space: pre-line; }
 .rp-meta { border-collapse: collapse; font-size: 8.5pt; min-width: 70mm; }
 .rp-meta th { text-align: left; font-weight: 500; color: var(--muted); padding: 0.6mm 4mm 0.6mm 0; white-space: nowrap; }
 .rp-meta td { padding: 0.6mm 0; font-family: var(--font-mono); text-align: left; border: 0; }
@@ -338,6 +347,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       <label class="sr" for="example" data-i18n>Load an example stack</label>
       <select id="example" class="btn">
         <option value="" data-i18n>Load example…</option>
+        <optgroup label="My examples" id="mineGroup"></optgroup>
         <optgroup label="Shafts and bearings" data-i18n-attr="label">
           <option value="bearing" data-i18n>Bearing cover axial gap</option>
           <option value="circlip" data-i18n>Retaining ring (DIN 471) axial play</option>
@@ -350,8 +360,16 @@ details.panel[open] > summary { margin-bottom: 12px; }
         </optgroup>
         <optgroup label="Electronics and batteries" data-i18n-attr="label">
           <option value="tpad" data-i18n>Thermal pad under heatsink</option>
+          <option value="lens" data-i18n>Camera lens focus</option>
           <option value="mezz" data-i18n>Board-to-board connector engagement</option>
           <option value="battery" data-i18n>Battery module cell stack</option>
+        </optgroup>
+        <optgroup label="Fasteners and joints" data-i18n-attr="label">
+          <option value="bolt" data-i18n>Floating fastener</option>
+          <option value="snap" data-i18n>Snap-fit hook engagement</option>
+        </optgroup>
+        <optgroup label="Vehicle body" data-i18n-attr="label">
+          <option value="door" data-i18n>Car door to fender gap</option>
         </optgroup>
         <optgroup label="Sheet metal" data-i18n-attr="label">
           <option value="sheet" data-i18n>Bent bracket to enclosure lid</option>
@@ -366,6 +384,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
         </optgroup>
       </select>
       <button class="btn" id="newStack" type="button">New stack</button>
+      <button class="btn" id="shareLink" type="button" title="Copy a link that opens this stack in any browser" data-i18n data-i18n-attr="title">Share link</button>
       <span class="tb-sep" aria-hidden="true"></span>
       <button class="btn" id="dlCsv" type="button" title="Download results as CSV" data-i18n-attr="title">CSV</button>
       <button class="btn" id="dlXlsx" type="button" title="Download results as an Excel workbook" data-i18n-attr="title">Excel</button>
@@ -381,7 +400,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   <main class="layout">
     <section class="editor" aria-label="Stack editor" data-i18n-attr="aria-label">
       <div class="panel setup">
-        <div class="panel-head"><h2 data-i18n>Stack</h2><span class="hint" data-i18n>Saved in this browser as you type</span></div>
+        <div class="panel-head"><h2 data-i18n>Stack</h2><div class="head-act"><span class="hint" data-i18n>Saved in this browser as you type</span><button class="btn small" id="saveMine" type="button" title="Keep this stack in the example list of this browser" data-i18n data-i18n-attr="title">Save as my example</button></div></div>
         <div class="grid">
           <label class="fld name" for="st-name"><span class="lab" data-i18n>Stack name</span><input id="st-name" data-s="name" autocomplete="off"></label>
           <label class="fld" for="st-lsl"><span class="lab"><span data-i18n>Lower limit</span> <em data-unit="len">mm</em></span><input id="st-lsl" data-s="lsl" data-u="len" inputmode="decimal" placeholder="none" data-i18n-attr="placeholder"></label>
@@ -394,6 +413,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
           <label class="fld" for="st-author"><span class="lab" data-i18n>Author</span><input id="st-author" data-s="author" autocomplete="off" placeholder="for the report" data-i18n-attr="placeholder"></label>
           <label class="fld" for="st-rev"><span class="lab" data-i18n>Revision</span><input id="st-rev" data-s="rev" autocomplete="off" placeholder="A"></label>
           <label class="fld res" for="st-result"><span class="lab" data-i18n>What the result measures</span><input id="st-result" data-s="result" autocomplete="off" placeholder="e.g. Axial gap between cover and bearing" data-i18n-attr="placeholder"></label>
+          <label class="fld res" for="st-notes"><span class="lab" data-i18n>Notes and references</span><textarea id="st-notes" data-s="notes" rows="2" autocomplete="off" placeholder="Standards, drawings, assumptions" data-i18n-attr="placeholder"></textarea></label>
         </div>
       </div>
 
@@ -425,6 +445,12 @@ details.panel[open] > summary { margin-bottom: 12px; }
         <button class="btn small" type="button" data-add="fit" data-i18n>Fit / pin</button>
         <button class="btn small" type="button" data-add="play" data-i18n>Play / clearance</button>
       </div>
+
+      <details class="panel" id="minePanel">
+        <summary><span data-i18n>My examples</span> <span class="hint" id="mineCount"></span></summary>
+        <ul class="mine-list" id="mineList"></ul>
+        <p class="hint" data-i18n>Kept in this browser only. To move a stack to another computer, use Share link or Save stack .json.</p>
+      </details>
 
       <details class="panel" id="ioPanel">
         <summary data-i18n>Import and export</summary>
@@ -532,6 +558,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
   const EXAMPLES = {
     bearing: () => ({
       name: t('Bearing cover'), result: t('Axial gap between cover spigot and bearing outer ring'), lsl: '0.05', usl: '0.40', tCold: '-20', tHot: '80', n: '100000',
+      notes: 'ISO 492:2014 · ISO 286-2:2010 · ISO 2768-1 · ISO 1101:2017',
       rows: [
         mk('lin', { label: t('Housing: bore shoulder to face'), nom: '30', up: '0.05', lo: '-0.05', mat: 'al' }),
         mk('lin', { label: t('Bearing 6204 width B (ISO 492 normal)'), dir: -1, nom: '14', up: '0', lo: '-0.12', mat: 'bearing' }),
@@ -543,6 +570,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     pins: () => ({
       name: t('Sensor bracket'), result: t('Sensor axis X position from base datum'), lsl: '44.92', usl: '45.08', tCold: '10', tHot: '40', n: '100000',
+      notes: 'ISO 286-2 · ISO 8734 (dowel pins, m6) · ISO 1101',
       rows: [
         mk('lin', { label: t('Base: datum to dowel hole'), nom: '20', up: '0.01', lo: '-0.01', mat: 'steel' }),
         mk('fit', { label: t('Ø6 dowel (m6) in bracket slip hole'), D: '6', hIso: 'F7', sIso: 'm6', hMat: 'al', sMat: 'steel' }),
@@ -554,6 +582,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     gear: () => ({
       name: t('Gearbox centre distance'), result: t('Centre distance between pinion and gear shafts'), lsl: '39.95', usl: '40.05', tCold: '-20', tHot: '70', n: '100000',
+      notes: 'ISO 286-2 · ISO 492 · ISO 5753-1 (radial internal clearance)',
       rows: [
         mk('lin', { label: t('Housing: bore-to-bore distance'), nom: '40', up: '0.02', lo: '-0.02', mat: 'alc' }),
         mk('fit', { label: t('Bearing 1 OD Ø32 in housing bore'), D: '32', hIso: 'H7', sMode: 'dev', sUp: '0', sLo: '-0.011', hMat: 'alc', sMat: 'bearing' }),
@@ -565,6 +594,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     circlip: () => ({
       name: t('Retaining ring axial play'), result: t('Axial play between bearing inner ring and DIN 471 retaining ring'), lsl: '0.02', usl: '0.35', tCold: '-20', tHot: '80', n: '100000',
+      notes: 'DIN 471 · ISO 492 · ISO 286-2',
       rows: [
         mk('lin', { label: t('Shaft: shoulder to groove flank'), nom: '14.85', up: '0.05', lo: '0' }),
         mk('lin', { label: t('Groove width m (DIN 471)'), nom: '1.1', tolMode: 'iso286', iso: 'H13' }),
@@ -575,6 +605,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     sheet: () => ({
       name: t('Sheet metal bracket'), result: t('Gap between bent bracket flange and enclosure lid'), lsl: '0.5', usl: '3.5', tCold: '-10', tHot: '60', n: '100000',
+      notes: 'ISO 2768-1 · EN 10131 · ISO 273 (Ø5.5 medium) · ISO 965-2',
       rows: [
         mk('lin', { label: t('Base plate: mounting face to lid seat'), nom: '38.5', tolMode: 'iso2768', cls: 'm', mat: 'al' }),
         mk('lin', { label: t('Bracket: bend height H'), dir: -1, nom: '35', tolMode: 'iso2768', cls: 'm' }),
@@ -585,6 +616,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     fixture: () => ({
       name: t('Two-pin machining fixture'), result: t('Machined bore X position from fixture datum'), lsl: '79.97', usl: '80.03', tCold: '18', tHot: '26', n: '100000',
+      notes: 'ISO 286-2',
       rows: [
         mk('lin', { label: t('Fixture: datum to round locating pin'), nom: '50', up: '0.005', lo: '-0.005' }),
         mk('fit', { label: t('Ø10 round pin (g6) in workpiece hole H7'), D: '10', hIso: 'H7', sIso: 'g6', hMat: 'al' }),
@@ -595,6 +627,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     ballscrew: () => ({
       name: t('Ball screw stage'), result: t('Tool point position at 300 mm commanded travel'), lsl: '389.95', usl: '390.05', tCold: '18', tHot: '28', n: '100000',
+      notes: 'ISO 3408-3 (class T5)',
       rows: [
         mk('lin', { label: t('Frame: base datum to fixed bearing'), nom: '50', up: '0.01', lo: '-0.01', mat: 'al' }),
         mk('lin', { label: t('Ball screw travel 300 mm, class T5 (e300 = 23 µm), runs 8 °C warm'), nom: '300', up: '0.0115', lo: '-0.0115', dT: '8' }),
@@ -605,6 +638,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     pcb: () => ({
       name: t('PCB in plastic housing'), result: t('Total side clearance between PCB edges and housing walls'), lsl: '0.10', usl: '1.00', tCold: '-40', tHot: '85', n: '100000',
+      notes: 'ISO 20457:2018',
       rows: [
         mk('lin', { label: t('Housing: inner width (moulded)'), nom: '80', up: '0.15', lo: '-0.15', mat: 'pa66gf' }),
         mk('lin', { label: t('PCB width (routed FR4, α 16)'), dir: -1, nom: '79.6', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '16' }),
@@ -613,6 +647,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     seat: () => ({
       name: t('Bearing seat in aluminium housing'), result: t('Diametral clearance (+) or interference (−) of the bearing outer ring in its seat'), lsl: '-0.060', usl: '0.025', tCold: '-40', tHot: '80', n: '100000',
+      notes: 'ISO 286-2 · ISO 492',
       rows: [
         mk('lin', { label: t('Housing bore Ø47 M7'), nom: '47', tolMode: 'iso286', iso: 'M7', mat: 'al' }),
         mk('lin', { label: t('Bearing 6204 outer ring Ø47 (ISO 492 normal), runs 10 °C warm'), dir: -1, nom: '47', up: '0', lo: '-0.011', mat: 'bearing', dT: '10' }),
@@ -621,6 +656,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     oring: () => ({
       name: t('O-ring face seal squeeze'), result: t('O-ring squeeze; limits are 15 to 30 % of the 3.53 mm cross-section'), lsl: '0.53', usl: '1.06', tCold: '-30', tHot: '120', n: '100000',
+      notes: 'ISO 3601-1 · Parker O-Ring Handbook ORD 5700',
       rows: [
         mk('lin', { label: t('O-ring cross-section 3.53 ±0.10 (NBR, α 200)'), nom: '3.53', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '200' }),
         mk('lin', { label: t('Groove depth 2.70 +0.05'), dir: -1, nom: '2.7', up: '0.05', lo: '0', mat: 'al' }),
@@ -629,6 +665,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     gap: () => ({
       name: t('Housing parting line gap'), result: t('Visible gap between cover skirt and base wall'), lsl: '0.1', usl: '0.7', tCold: '-20', tHot: '60', n: '100000',
+      notes: 'ISO 20457:2018',
       rows: [
         mk('lin', { label: t('Base: locating boss to wall inner face (PC/ABS)'), nom: '40', up: '0.15', lo: '-0.15', mat: 'custom', alpha: '70' }),
         mk('lin', { label: t('Cover: locating pin to skirt outer face (PC/ABS)'), dir: -1, nom: '39.6', up: '0.15', lo: '-0.15', mat: 'custom', alpha: '70' }),
@@ -638,6 +675,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     tpad: () => ({
       name: t('Thermal pad under heatsink'), result: t('Gap filled by a 2.0 mm thermal pad; limits give 10 to 30 % compression'), lsl: '1.40', usl: '1.80', tCold: '-20', tHot: '85', n: '100000',
+      notes: 'IPC-6012 (bow and twist 0.75 %)',
       rows: [
         mk('lin', { label: t('Standoff: PCB top to heatsink face'), nom: '6.1', up: '0.05', lo: '-0.05', mat: 'al' }),
         mk('lin', { label: t('Component height (datasheet 4.5 ±0.1)'), dir: -1, nom: '4.5', up: '0.1', lo: '-0.1', mat: 'none' }),
@@ -648,6 +686,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     }),
     mezz: () => ({
       name: t('Board-to-board connector engagement'), result: t('Contact engagement of the mezzanine connector pair'), lsl: '0.8', usl: '2.2', tCold: '-40', tHot: '85', n: '100000',
+      notes: 'IPC-6012',
       rows: [
         mk('lin', { label: t('Receptacle height on lower board'), nom: '4', up: '0.1', lo: '-0.1', mat: 'none' }),
         mk('lin', { label: t('Plug height on upper board'), nom: '5.5', up: '0.1', lo: '-0.1', mat: 'none' }),
@@ -663,6 +702,52 @@ details.panel[open] > summary { margin-bottom: 12px; }
         mk('lin', { label: t('Foam pads: 9 × 1.5 ±0.15 free height'), nom: '1.5', up: '0.15', lo: '-0.15', k: '9', mat: 'none' }),
         mk('lin', { label: t('End plates: 2 × 12 ±0.1'), nom: '12', up: '0.1', lo: '-0.1', k: '2', mat: 'al' }),
         mk('lin', { label: t('Tie rods: distance between nut seats'), dir: -1, nom: '303.5', up: '0.2', lo: '-0.2', mat: 'steel' })
+      ]
+    }),
+    bolt: () => ({
+      name: t('Floating fastener'), result: t('Clearance left for the M6 bolt through both plates; below zero it does not fit'), lsl: '0', usl: '', tCold: '-20', tHot: '60', n: '100000',
+      notes: t('Position Ø0.8 is looser than the floating fastener rule T = H − F = 6.6 − 6.0 = 0.6, so worst case fails while RSS passes.') + ' ISO 273 (Ø6.6 medium) · ISO 965-2 (M6 6g) · ISO 286-2 (H13) · ASME Y14.5-2018',
+      rows: [
+        mk('lin', { label: t('Upper plate: hole Ø6.6 H13 (ISO 273 medium), radius'), nom: '6.6', tolMode: 'iso286', iso: 'H13', k: '0.5', mat: 'al' }),
+        mk('lin', { label: t('Lower plate: hole Ø6.6 H13, radius'), nom: '6.6', tolMode: 'iso286', iso: 'H13', k: '0.5' }),
+        mk('lin', { label: t('M6 bolt major diameter (6g)'), dir: -1, nom: '6', up: '-0.026', lo: '-0.206' }),
+        mk('lin', { label: t('Upper plate: edge to hole, position Ø0.8'), dir: -1, nom: '25', up: '0.4', lo: '-0.4', mat: 'al' }),
+        mk('lin', { label: t('Lower plate: edge to hole, position Ø0.8'), nom: '25', up: '0.4', lo: '-0.4' })
+      ]
+    }),
+    door: () => ({
+      name: t('Car door to fender gap'), result: t('Visible gap between fender rear edge and front door, spec 4.0 ±0.7'), lsl: '3.3', usl: '4.7', tCold: '-30', tHot: '80', n: '100000',
+      notes: t('Typical body-in-white values, not from a standard. About 1.7 % of doors fall outside the spec, which is why doors are set with gap gauges on their slotted hinges.'),
+      rows: [
+        mk('lin', { label: t('Body: fender mount to hinge face (welded body)'), nom: '120', up: '0.5', lo: '-0.5' }),
+        mk('lin', { label: t('Hinge: body leaf to door leaf'), nom: '18', up: '0.15', lo: '-0.15' }),
+        mk('lin', { label: t('Door: hinge face to front edge (aluminium, hemmed)'), dir: -1, nom: '30', up: '0.4', lo: '-0.4', mat: 'al' }),
+        mk('lin', { label: t('Fender: mount to rear edge (stamped)'), dir: -1, nom: '103.8', up: '0.3', lo: '-0.3' }),
+        mk('lin', { label: t('Door setting on slotted hinge holes'), nom: '0', up: '0.3', lo: '-0.3', mat: 'none', dist: 'uniform' }),
+        mk('lin', { label: t('Paint film on both edges, 2 × 0.10'), dir: -1, nom: '0.1', up: '0.03', lo: '-0.03', k: '2', mat: 'none' })
+      ]
+    }),
+    snap: () => ({
+      name: t('Snap-fit hook engagement'), result: t('Overlap of the lid hook under the base ledge; 0.6 holds, above 1.4 the hook overstrains on assembly'), lsl: '0.6', usl: '1.4', tCold: '-20', tHot: '60', n: '100000',
+      notes: 'ISO 20457:2018 · Bayer MaterialScience, Snap-Fit Joints for Plastics: A Design Guide',
+      rows: [
+        mk('lin', { label: t('Lid: locating rib to hook tip (PC/ABS)'), nom: '21', up: '0.1', lo: '-0.1', mat: 'custom', alpha: '70' }),
+        mk('lin', { label: t('Base: locating slot to ledge edge (PA66 GF30)'), dir: -1, nom: '20', up: '0.1', lo: '-0.1', mat: 'pa66gf' }),
+        mk('play', { label: t('Locating rib in slot'), pmin: '0.1', pmax: '0.3', dist: 'uniform' }),
+        mk('lin', { label: t('Hook bends inwards after moulding'), nom: '0', up: '0', lo: '-0.15', mat: 'none', dist: 'uniform' })
+      ]
+    }),
+    lens: () => ({
+      name: t('Camera lens focus'), result: t('Focus error: lens image plane to sensor surface; depth of focus ±N·c = ±2.5 × 6 µm'), lsl: '-0.015', usl: '0.015', tCold: '-30', tHot: '85', n: '100000',
+      notes: t('Passive assembly misses the depth of focus by far; camera modules are focused and glued by active alignment. A cover glass of thickness t moves the focus by t(1 − 1/n).') + ' W. J. Smith, Modern Optical Engineering',
+      rows: [
+        mk('lin', { label: t('Lens holder: PCB face to lens seat'), nom: '7.937', up: '0.02', lo: '-0.02', mat: 'pa66gf' }),
+        mk('lin', { label: t('Adhesive bondline under the holder'), nom: '0.05', up: '0.02', lo: '-0.02', mat: 'none' }),
+        mk('lin', { label: t('Lens: flange back focal length'), dir: -1, nom: '6.6', up: '0.015', lo: '-0.015', mat: 'al' }),
+        mk('lin', { label: t('Cover glass 0.40 (n 1.52) focus shift'), dir: -1, nom: '0.137', up: '0.005', lo: '-0.005', mat: 'none' }),
+        mk('lin', { label: t('Sensor: seating plane to die surface (datasheet)'), dir: -1, nom: '1.2', up: '0.025', lo: '-0.025', mat: 'none' }),
+        mk('lin', { label: t('Sensor solder joint height'), dir: -1, nom: '0.05', up: '0.02', lo: '-0.02', mat: 'none' }),
+        mk('lin', { label: t('PCB bow under the sensor'), nom: '0', up: '0.01', lo: '-0.01', mat: 'none', dist: 'uniform' })
       ]
     })
   };
@@ -778,7 +863,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
       units: o.units === 'imp' ? 'imp' : (o.units === 'si' ? 'si' : (state && state.units) || 'si'),
       chain: o.chain === 'scale' ? 'scale' : 'equal',
       view: o.view === '2d' ? '2d' : 'iso', example: Preview.has(o.example) ? o.example : '',
-      author: o.author ?? '', rev: o.rev ?? '',
+      author: o.author ?? '', rev: o.rev ?? '', notes: o.notes ?? '',
       rows
     };
   }
@@ -956,6 +1041,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const k = e.target.value;
     e.target.value = '';
     if (EXAMPLES[k]) replaceState(exampleState(k), t('Loaded example: {name}', { name: e.target.querySelector('[value="' + k + '"]').textContent }));
+    else if (k.startsWith('mine:')) openMine(+k.slice(5));
   });
   $('#newStack').addEventListener('click', () => {
     const b = $('#newStack');
@@ -971,19 +1057,122 @@ details.panel[open] > summary { margin-bottom: 12px; }
   /* ---------- import / export ---------- */
   function copy(text, what) {
     $('#ioText').value = text;
-    const fallback = () => { $('#ioText').focus(); $('#ioText').select(); toast(t('{what} is in the box below. Copy it with ⌘C / Ctrl+C', { what }), true); };
+    const fallback = () => { $('#ioPanel').open = true; $('#ioText').focus(); $('#ioText').select(); toast(t('{what} is in the box below. Copy it with ⌘C / Ctrl+C', { what }), true); };
     try {
       navigator.clipboard.writeText(text).then(() => toast(t('{what} copied to clipboard', { what }), true), fallback);
     } catch (e) { fallback(); }
   }
-  $('#copyJson').addEventListener('click', () => {
-    const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
-    copy(JSON.stringify(out, null, 2), t('Stack JSON'));
+  // the stack as saved: rows without their session ids
+  const portable = st => Object.assign({}, st, { rows: st.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
+  $('#copyJson').addEventListener('click', () => copy(JSON.stringify(portable(state), null, 2), t('Stack JSON')));
+  $('#saveJson').addEventListener('click', () => download(fileBase() + '.json', new Blob([JSON.stringify(portable(state), null, 2)], { type: 'application/json' })));
+
+  /* ---------- share link: the stack, compressed, in the URL fragment (never sent to a server) ---------- */
+  // rows keep only the fields that differ from a new row of their type
+  function compact(st) {
+    const o = {};
+    Object.keys(st).forEach(k => { if (k !== 'rows' && st[k] !== '' && st[k] != null) o[k] = st[k]; });
+    const keep = nextId;
+    o.rows = st.rows.map(r => {
+      const d = newRow(r.type), c = { type: r.type, label: r.label };
+      Object.keys(r).forEach(k => { if (k !== 'id' && !(k in c) && String(r[k]) !== String(d[k])) c[k] = r[k]; });
+      return c;
+    });
+    nextId = keep;
+    return o;
+  }
+  const b64u = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const unb64u = txt => Uint8Array.from(atob(txt.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  const zipOK = typeof CompressionStream === 'function' && typeof DecompressionStream === 'function';
+  async function pipe(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
+  // 'z' + deflate-raw, or 'j' + plain UTF-8 where the browser cannot compress
+  async function encodeStack(st) {
+    const raw = new TextEncoder().encode(JSON.stringify(compact(st)));
+    return zipOK ? 'z' + b64u(await pipe(raw, new CompressionStream('deflate-raw'))) : 'j' + b64u(raw);
+  }
+  async function decodeStack(code) {
+    const kind = code[0], bytes = unb64u(code.slice(1));
+    if (kind === 'z') return JSON.parse(new TextDecoder().decode(await pipe(bytes, new DecompressionStream('deflate-raw'))));
+    if (kind === 'j') return JSON.parse(new TextDecoder().decode(bytes));
+    throw new Error(t('Unknown link format'));
+  }
+  async function shareUrl(st) { return location.origin + location.pathname + '#s=' + await encodeStack(st); }
+  async function copyLink(st) {
+    try { copy(await shareUrl(st), t('Share link')); }
+    catch (e) { toast(t('Could not make a link: {msg}', { msg: e.message }), true); }
+  }
+  $('#shareLink').addEventListener('click', () => copyLink(state));
+  async function openShared() {
+    const m = /^#s=([A-Za-z0-9_-]+)$/.exec(location.hash);
+    if (!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    try {
+      const o = await decodeStack(m[1]);
+      replaceState(o, t('Opened shared stack: {name}', { name: o.name || t('Untitled stack') }));
+    } catch (e) { toast(t('Could not open the shared link: {msg}', { msg: e.message }), true); }
+  }
+  window.addEventListener('hashchange', openShared);
+
+  /* ---------- my examples: named stacks kept in this browser ---------- */
+  const MINE = 'tcc.mine.v1', mineGroup = $('#mineGroup');
+  function mineList() {
+    try { const a = JSON.parse(localStorage.getItem(MINE) || '[]'); return Array.isArray(a) ? a.filter(x => x && x.st && Array.isArray(x.st.rows)) : []; } catch (e) { return []; }
+  }
+  function mineSave(list) {
+    try { localStorage.setItem(MINE, JSON.stringify(list)); return true; } catch (e) { toast(t('Could not save: this browser blocks storage'), true); return false; }
+  }
+  function renderMine() {
+    const list = mineList(), grp = mineGroup;
+    // an empty optgroup still shows its label in some browsers, so it leaves the list when empty
+    grp.label = t('My examples');
+    grp.innerHTML = list.map((x, i) => '<option value="mine:' + i + '">' + esc(x.name) + '</option>').join('');
+    if (!list.length) grp.remove();
+    else if (!grp.isConnected) $('#example').options[0].after(grp);
+    $('#mineCount').textContent = list.length ? '(' + list.length + ')' : '';
+    $('#mineList').innerHTML = list.length ? list.map((x, i) =>
+      '<li><span class="mine-name" title="' + esc(x.name) + '">' + esc(x.name) + '</span><span class="mine-date">' + esc(new Date(x.saved).toLocaleDateString(I18N.lang())) + '</span>' +
+      '<button type="button" class="btn small" data-mine="open" data-i="' + i + '">' + t('Open') + '</button>' +
+      '<button type="button" class="btn small" data-mine="link" data-i="' + i + '">' + t('Share link') + '</button>' +
+      '<button type="button" class="btn small" data-mine="del" data-i="' + i + '">' + t('Delete') + '</button></li>').join('')
+      : '<li class="mine-empty">' + t('Nothing saved yet. Press Save as my example above.') + '</li>';
+  }
+  function openMine(i) {
+    const x = mineList()[i];
+    if (x) replaceState(JSON.parse(JSON.stringify(x.st)), t('Opened my example: {name}', { name: x.name }));
+  }
+  $('#saveMine').addEventListener('click', () => {
+    const name = (state.name || '').trim() || t('Untitled stack'), list = mineList(), at = list.findIndex(x => x.name === name);
+    const entry = { name, saved: new Date().toISOString(), st: portable(state) };
+    if (at >= 0) list[at] = entry; else list.push(entry);
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    if (!mineSave(list)) return;
+    renderMine();
+    toast(t(at >= 0 ? 'Updated “{name}” in My examples' : 'Saved “{name}” to My examples', { name }), true);
   });
-  $('#saveJson').addEventListener('click', () => {
-    const out = Object.assign({}, state, { rows: state.rows.map(r => { const c = Object.assign({}, r); delete c.id; return c; }) });
-    download(fileBase() + '.json', new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+  let delArmed = null;
+  $('#mineList').addEventListener('click', e => {
+    const b = e.target.closest('[data-mine]');
+    if (!b) return;
+    const i = +b.dataset.i, x = mineList()[i];
+    if (!x) return;
+    if (b.dataset.mine === 'open') openMine(i);
+    else if (b.dataset.mine === 'link') copyLink(x.st);
+    else if (delArmed !== b) {
+      if (delArmed) renderMine();
+      delArmed = $('#mineList').querySelector('[data-mine="del"][data-i="' + i + '"]');
+      delArmed.textContent = t('Click again to delete');
+      delArmed.classList.add('armed');
+      const armed = delArmed;
+      setTimeout(() => { if (delArmed === armed) { delArmed = null; renderMine(); } }, 3000);
+    } else {
+      delArmed = null;
+      const list = mineList();
+      list.splice(i, 1);
+      if (mineSave(list)) { renderMine(); toast(t('Deleted “{name}” from My examples', { name: x.name }), true); }
+    }
   });
+  // another tab saved or deleted one
+  window.addEventListener('storage', e => { if (e.key === MINE) renderMine(); });
   function loadJsonText(txt) {
     try { replaceState(JSON.parse(txt), t('Stack loaded')); }
     catch (e) { toast(t('Could not load: {msg}', { msg: e.message }), true); }
@@ -1508,7 +1697,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const ch = chainMarkup(state.chain === 'scale' ? 'scale' : 'equal');
     const hist = x => '<div class="rp-keep"><h3>' + t('Ambient {T}', { T: tempTxt(x.T) }) + '</h3><svg viewBox="0 0 480 250" role="img" aria-label="' + esc(t('Histogram at {T}', { T: tempTxt(x.T) })) + '">' + histMarkup(x) + '</svg></div>';
     $('#report').innerHTML =
-      '<header class="rp-head"><div><div class="rp-kicker">' + t('Tolerance stack-up report') + '</div><h1>' + esc(state.name || t('Untitled stack')) + '</h1><p>' + esc(state.result || '') + '</p></div>' +
+      '<header class="rp-head"><div><div class="rp-kicker">' + t('Tolerance stack-up report') + '</div><h1>' + esc(state.name || t('Untitled stack')) + '</h1><p>' + esc(state.result || '') + '</p>' + (state.notes ? '<p class="rp-notes">' + esc(state.notes) + '</p>' : '') + '</div>' +
       '<table class="rp-meta">' + meta.map(([k, v]) => '<tr><th>' + k + '</th><td>' + esc(v) + '</td></tr>').join('') + '</table></header>' +
       '<section class="rp-sec rp-keep"><h2>' + t('Summary') + '</h2><div class="rp-summary">' + summary + '</div></section>' +
       (state.example ? '<section class="rp-sec rp-keep"><h2>' + t('Assembly view (schematic)') + '</h2><div class="rp-grid">' + [['2d', '2D section'], ['iso', '3D isometric']].map(([v, h], i) => { const m = previewMarkup(v, false, 'rp' + i, false); return '<div><h3>' + t(h) + '</h3><svg viewBox="' + m.vb + '" role="img" aria-label="' + esc(t(h)) + '">' + m.g + '</svg></div>'; }).join('') + '</div></section>' : '') +
@@ -1543,6 +1732,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     I18N.setLang(langSel.value, true);
     applyLang();
     renderAll();
+    renderMine();
   });
 
   // About dialog: toolbar button, footer link and #about deep link
@@ -1562,6 +1752,8 @@ details.panel[open] > summary { margin-bottom: 12px; }
   if (location.hash === '#about') openAbout();
   state = load();
   renderAll();
+  renderMine();
+  openShared();
 })();
 </script>
 </body>
