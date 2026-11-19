@@ -39,37 +39,37 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="Tolerance Chain">
-<meta name="theme-color" content="#edf0ee" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101615" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
 <script>
   // apply the saved theme before first paint; with none saved the system setting applies
-  try { const t = localStorage.getItem('tcc.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) { /* storage unavailable */ }
+  try { const t = (localStorage.getItem('ehcrea.theme') || localStorage.getItem('tcc.theme')); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) { /* storage unavailable */ }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 /* Layout: contributor cards on the left, a sticky results rail on the right; one column under 1080px.
-   Palette: cool steel greys with a machined-teal accent, like a measuring room drawing. */
+   Palette: the shared ehcrea calculators palette (same light/dark colours in every tool). */
 :root {
-  --bg: #edf0ee;
-  --panel: #fbfcfb;
+  --bg: #f5f6f8;
+  --panel: #ffffff;
   --field: #ffffff;
-  --ink: #15201e;
-  --muted: #5b6967;
-  --line: #d2d9d6;
-  --line-strong: #aebab6;
-  --accent: #0b6670;
+  --ink: #14181f;
+  --muted: #5a626e;
+  --line: #dde1e7;
+  --line-strong: #7d8592;
+  --accent: #1f5ea8;
   --accent-ink: #ffffff;
-  --accent-soft: #d9ebea;
-  --ok: #1c7642;
-  --ok-soft: #dbeee1;
-  --warn: #935900;
-  --warn-soft: #f5e7cc;
-  --bad: #ae2a20;
-  --bad-soft: #f6dcd8;
-  --heat: #c4511a;
-  --cool: #aab6b2;
+  --accent-soft: #e6eef8;
+  --ok: #1d7a46;
+  --ok-soft: #e3f2e9;
+  --warn: #8a4b00;
+  --warn-soft: #fff4e5;
+  --bad: #b3261e;
+  --bad-soft: #fdecec;
+  --heat: #c8501c;
+  --cool: #b4bdc9;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -77,16 +77,16 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
-    --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
-    --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a; --heat: #f08a4b; --cool: #4a5a57;
+    --bg: #0f1216; --panel: #171b21; --field: #0f1216; --ink: #e7eaef; --muted: #9aa3af;
+    --line: #2b323c; --line-strong: #6b7482; --accent: #6aa5ec; --accent-ink: #0b1018; --accent-soft: #1b2a3d;
+    --ok: #5cc98c; --ok-soft: #173426; --warn: #f3c27a; --warn-soft: #2e2312; --bad: #ff8a80; --bad-soft: #331a1a; --heat: #f08a4b; --cool: #4a5462;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #101615; --panel: #172120; --field: #0f1615; --ink: #e2eae8; --muted: #93a3a0;
-  --line: #2a3735; --line-strong: #41514e; --accent: #52b5bb; --accent-ink: #06201f; --accent-soft: #1b3537;
-  --ok: #63c48b; --ok-soft: #173426; --warn: #e3a744; --warn-soft: #3a2c12; --bad: #f07b70; --bad-soft: #3f1d1a; --heat: #f08a4b; --cool: #4a5a57;
+  --bg: #0f1216; --panel: #171b21; --field: #0f1216; --ink: #e7eaef; --muted: #9aa3af;
+  --line: #2b323c; --line-strong: #6b7482; --accent: #6aa5ec; --accent-ink: #0b1018; --accent-soft: #1b2a3d;
+  --ok: #5cc98c; --ok-soft: #173426; --warn: #f3c27a; --warn-soft: #2e2312; --bad: #ff8a80; --bad-soft: #331a1a; --heat: #f08a4b; --cool: #4a5462;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -147,8 +147,8 @@ select.btn { padding-right: 8px; }
 .fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .fld.wide { grid-column: span 2; }
 .lab { font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lab em { font-style: normal; opacity: 0.8; }
-.fld input, .fld select, .fld textarea { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--field); border-radius: 4px; padding: 5px 7px; font-size: 13.5px; }
+.lab em { font-style: normal; color: var(--muted); }
+.fld input, .fld select, .fld textarea { width: 100%; min-width: 0; border: 1px solid var(--line-strong); background: var(--field); border-radius: 4px; padding: 5px 7px; font-size: 13.5px; }
 .fld textarea { resize: vertical; min-height: 2.6em; font-family: inherit; line-height: 1.4; color: inherit; }
 .fld input:hover, .fld select:hover, .fld textarea:hover { border-color: var(--line-strong); }
 .setup .grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
@@ -235,8 +235,8 @@ select.btn { padding-right: 8px; }
 .about a.social-link:hover { border-color: currentColor; text-decoration: underline; }
 .about-support { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--accent-soft); }
 .about-support p { margin: 0 0 10px; }
-.about a.btn-support { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; background: #ff424d; color: #fff; font-weight: 600; font-size: 13px; text-decoration: none; }
-.about a.btn-support:hover { background: #e63a44; }
+.about a.btn-support { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; background: #d6303a; color: #fff; font-weight: 600; font-size: 13px; text-decoration: none; }
+.about a.btn-support:hover { background: #c42b35; }
 .about .about-meta { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 
 /* assembly view */
@@ -321,9 +321,9 @@ details.panel[open] > summary { margin-bottom: 12px; }
   .report { display: block; }
 }
 .report {
-  --bg: #ffffff; --panel: #ffffff; --field: #ffffff; --ink: #121a19; --muted: #56625f; --line: #d4dad8; --line-strong: #9eaaa6;
-  --accent: #0b6670; --accent-ink: #ffffff; --accent-soft: #dcecea; --ok: #1c7642; --ok-soft: #dbeee1; --warn: #8a5300; --warn-soft: #f5e7cc;
-  --bad: #ae2a20; --bad-soft: #f6dcd8; --heat: #c4511a; --cool: #aab6b2;
+  --bg: #f5f6f8; --panel: #ffffff; --field: #ffffff; --ink: #14181f; --muted: #5a626e; --line: #dde1e7; --line-strong: #7d8592;
+  --accent: #1f5ea8; --accent-ink: #ffffff; --accent-soft: #e6eef8; --ok: #1d7a46; --ok-soft: #e3f2e9; --warn: #8a4b00; --warn-soft: #fff4e5;
+  --bad: #b3261e; --bad-soft: #fdecec; --heat: #c8501c; --cool: #b4bdc9;
   color-scheme: light; background: #fff; color: var(--ink); font-size: 9.5pt; line-height: 1.4;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
@@ -1060,7 +1060,7 @@ details.panel[open] > summary { margin-bottom: 12px; }
     const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     const next = dark ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('tcc.theme', next); } catch (e) { /* storage unavailable */ }
+    try { localStorage.setItem('ehcrea.theme', next); } catch (e) { /* storage unavailable */ }
     renderPreview();
   });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderPreview());
