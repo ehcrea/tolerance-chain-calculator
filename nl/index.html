@@ -372,10 +372,6 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
     </div>
     <div class="toolbar">
-      <div class="tabs" id="unitTabs" role="group" aria-label="Eenheden" data-i18n-attr="aria-label">
-        <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
-        <button type="button" data-units="imp" aria-pressed="false" data-i18n>Imperiaal · in</button>
-      </div>
       <label class="sr" for="example" data-i18n>Voorbeeld laden</label>
       <select id="example" class="btn">
         <option value="" data-i18n>Voorbeeld laden…</option>
@@ -415,14 +411,18 @@ details.panel[open] > summary { margin-bottom: 12px; }
           <option value="pcb" data-i18n>Printplaat in kunststof behuizing, −40 tot 85 °C</option>
         </optgroup>
       </select>
+      <div class="tabs" id="unitTabs" role="group" aria-label="Eenheden" data-i18n-attr="aria-label">
+        <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
+        <button type="button" data-units="imp" aria-pressed="false" data-i18n>Imperiaal · in</button>
+      </div>
+      <label class="sr" for="langSelect" data-i18n>Taal</label>
+      <select class="btn" id="langSelect" title="Taal" data-i18n-attr="title"></select>
       <button class="btn" id="newStack" type="button">Nieuwe keten</button>
       <button class="btn" id="shareLink" type="button" title="Kopieer een link die deze keten in elke browser opent" data-i18n data-i18n-attr="title">Link delen</button>
       <span class="tb-sep" aria-hidden="true"></span>
       <button class="btn" id="dlCsv" type="button" title="Resultaten downloaden als CSV" data-i18n-attr="title">CSV</button>
       <button class="btn" id="dlXlsx" type="button" title="Resultaten downloaden als Excel-werkmap" data-i18n-attr="title">Excel</button>
       <button class="btn primary" id="pdfReport" type="button" title="Afdrukklaar rapport openen; kies Opslaan als PDF in het afdrukvenster" data-i18n data-i18n-attr="title">PDF-rapport</button>
-      <label class="sr" for="langSelect" data-i18n>Taal</label>
-      <select class="btn" id="langSelect" title="Taal" data-i18n-attr="title"></select>
       <button class="btn" id="aboutOpen" type="button" title="Over deze calculator" data-i18n data-i18n-attr="title">Over</button>
       <button class="btn icon" id="btnTheme" type="button" title="Licht/donker thema wisselen" aria-label="Thema wisselen" data-i18n-attr="title aria-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
     </div>
