@@ -10,7 +10,7 @@
  *   the cache.
  */
 'use strict';
-const CACHE = "tolerance-chain-calculator-3129278acb13";
+const CACHE = "tolerance-chain-calculator-f3d79109aa07";
 const PREFIX = "tolerance-chain-calculator-";
 const FILES = [
   "apple-touch-icon.png",
