@@ -53,6 +53,7 @@ ISO 286-1 deviations are computed from the fundamental deviation rules for sizes
 
 The calculator is a Progressive Web App: after the first visit it works without an internet connection, in every language and in light and dark mode.
 
+- **In the app:** the About page has an *Install app* button (and Chrome/Edge also show one in the toolbar); browsers without an install prompt get short instructions there instead.
 - **Chrome or Edge (macOS, Windows, Linux):** click the install icon at the right of the address bar, or menu › *Cast, save and share* › *Install page as app*.
 - **Safari on macOS (Sonoma or later):** *File* › *Add to Dock*.
 - **iPhone / iPad:** Share › *Add to Home Screen*. **Android:** menu › *Install app*.
