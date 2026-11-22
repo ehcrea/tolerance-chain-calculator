@@ -49,6 +49,18 @@ ISO 286-1 deviations are computed from the fundamental deviation rules for sizes
 - `i18n.js`: translation helper; `i18n/de.js`, `i18n/nl.js`, `i18n/es.js`, `i18n/tr.js` map the English text to each language
 - `favicon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `manifest.webmanifest`: browser and home-screen icons
 
+## Install as an app and use it offline
+
+The calculator is a Progressive Web App: after the first visit it works without an internet connection, in every language and in light and dark mode.
+
+- **Chrome or Edge (macOS, Windows, Linux):** click the install icon at the right of the address bar, or menu › *Cast, save and share* › *Install page as app*.
+- **Safari on macOS (Sonoma or later):** *File* › *Add to Dock*.
+- **iPhone / iPad:** Share › *Add to Home Screen*. **Android:** menu › *Install app*.
+
+Updates install themselves: when you are online the newest version is always loaded, and the offline copy is refreshed in the background.
+
+**Maintainers:** `sw.js` is generated. After changing, adding or removing any file of the site, run `node tools/build-sw.js` and commit `sw.js` (the cache version is a hash of all files, so this is what makes the update reach installed copies). The tests fail if it is out of date (`node tools/build-sw.js --check`).
+
 ## Disclaimer
 
 This is an engineering aid. Verify results for safety-critical or production decisions.

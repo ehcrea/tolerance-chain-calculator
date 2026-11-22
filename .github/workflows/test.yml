@@ -19,3 +19,5 @@ jobs:
           node-version: 20
       - name: ISO 286 fit deviations
         run: node tests/iso286.test.js
+      - name: Offline cache (sw.js) is up to date
+        run: node tools/build-sw.js --check
