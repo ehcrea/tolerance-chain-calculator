@@ -372,10 +372,6 @@ details.panel[open] > summary { margin-bottom: 12px; }
       </div>
     </div>
     <div class="toolbar">
-      <div class="tabs" id="unitTabs" role="group" aria-label="Birimler" data-i18n-attr="aria-label">
-        <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
-        <button type="button" data-units="imp" aria-pressed="false" data-i18n>İnç · in</button>
-      </div>
       <label class="sr" for="example" data-i18n>Örnek zincir yükle</label>
       <select id="example" class="btn">
         <option value="" data-i18n>Örnek yükle…</option>
@@ -415,14 +411,18 @@ details.panel[open] > summary { margin-bottom: 12px; }
           <option value="pcb" data-i18n>Plastik kutuda baskı devre kartı, −40 ile 85 °C arası</option>
         </optgroup>
       </select>
+      <div class="tabs" id="unitTabs" role="group" aria-label="Birimler" data-i18n-attr="aria-label">
+        <button type="button" data-units="si" aria-pressed="true">SI · mm</button>
+        <button type="button" data-units="imp" aria-pressed="false" data-i18n>İnç · in</button>
+      </div>
+      <label class="sr" for="langSelect" data-i18n>Dil</label>
+      <select class="btn" id="langSelect" title="Dil" data-i18n-attr="title"></select>
       <button class="btn" id="newStack" type="button">Yeni zincir</button>
       <button class="btn" id="shareLink" type="button" title="Bu zinciri herhangi bir tarayıcıda açan bir bağlantı kopyala" data-i18n data-i18n-attr="title">Bağlantıyı paylaş</button>
       <span class="tb-sep" aria-hidden="true"></span>
       <button class="btn" id="dlCsv" type="button" title="Sonuçları CSV olarak indir" data-i18n-attr="title">CSV</button>
       <button class="btn" id="dlXlsx" type="button" title="Sonuçları Excel çalışma kitabı olarak indir" data-i18n-attr="title">Excel</button>
       <button class="btn primary" id="pdfReport" type="button" title="Yazdırmaya hazır raporu aç; yazdırma penceresinde PDF olarak kaydet'i seçin" data-i18n data-i18n-attr="title">PDF rapor</button>
-      <label class="sr" for="langSelect" data-i18n>Dil</label>
-      <select class="btn" id="langSelect" title="Dil" data-i18n-attr="title"></select>
       <button class="btn" id="aboutOpen" type="button" title="Bu hesaplayıcı hakkında" data-i18n data-i18n-attr="title">Hakkında</button>
       <button class="btn icon" id="btnTheme" type="button" title="Açık/koyu temayı değiştir" aria-label="Temayı değiştir" data-i18n-attr="title aria-label"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
     </div>
