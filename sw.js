@@ -10,10 +10,14 @@
  *   the cache.
  */
 'use strict';
-const CACHE = "tolerance-chain-calculator-f3d79109aa07";
+const CACHE = "tolerance-chain-calculator-52f1e9356e2e";
 const PREFIX = "tolerance-chain-calculator-";
 const FILES = [
-  "apple-touch-icon.png",
+  "app-icon-180.png",
+  "app-icon-192.png",
+  "app-icon-512.png",
+  "app-icon-maskable-512.png",
+  "app-icon.svg",
   "de/",
   "engine.js",
   "es/",
@@ -24,9 +28,6 @@ const FILES = [
   "i18n/nl.js",
   "i18n/tr.js",
   "i18n.js",
-  "icon-192.png",
-  "icon-512.png",
-  "icon-maskable-512.png",
   "./",
   "manifest.webmanifest",
   "nl/",
